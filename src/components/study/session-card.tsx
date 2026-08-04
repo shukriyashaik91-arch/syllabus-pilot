@@ -36,7 +36,7 @@ export function SessionCard({ session, subjects, onToggle }: SessionCardProps) {
         <p className={cn("truncate font-medium", session.done && "line-through")}>
           {session.title}
         </p>
-        <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
           <span className="truncate">{subjectName(subjects, session.subjectId)}</span>
           <span aria-hidden>·</span>
           <span className="inline-flex items-center gap-1">
@@ -46,7 +46,8 @@ export function SessionCard({ session, subjects, onToggle }: SessionCardProps) {
           <Badge variant="secondary" className="rounded-full text-[10px]">
             {KIND_LABEL[session.kind]}
           </Badge>
-        </p>
+        </div>
+
       </div>
       <Button
         size="sm"
