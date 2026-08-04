@@ -29,7 +29,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Turn your syllabus, exam dates and free hours into a personalised day-by-day study timetable.",
+          "Track today's study plan, syllabus progress, exam countdowns and your study streak in one calm dashboard.",
       },
     ],
   }),

@@ -79,20 +79,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Studyloop — Adaptive Study Planner" },
+      { title: "Studyloop — Adaptive Study Planner Dashboard" },
       {
         name: "description",
         content:
-          "Turn your syllabus, exam dates and free hours into a personalised, adaptive study timetable.",
+          "Track today's study plan, syllabus progress, exam countdowns and your study streak in one calm dashboard.",
       },
-      { property: "og:title", content: "Studyloop — Adaptive Study Planner" },
+      { property: "og:title", content: "Studyloop — Adaptive Study Planner Dashboard" },
       {
         property: "og:description",
         content:
-          "Turn your syllabus, exam dates and free hours into a personalised, adaptive study timetable.",
+          "Track today's study plan, syllabus progress, exam countdowns and your study streak in one calm dashboard.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Studyloop — Adaptive Study Planner Dashboard" },
+      { name: "twitter:description", content: "Track today's study plan, syllabus progress, exam countdowns and your study streak in one calm dashboard." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c39cbc9c-0b52-4620-84ee-e02c3d5b56ce/id-preview-d8a39ffa--009a28d2-dd50-4175-a5c8-d2fe1ee36dbf.lovable.app-1785835748510.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c39cbc9c-0b52-4620-84ee-e02c3d5b56ce/id-preview-d8a39ffa--009a28d2-dd50-4175-a5c8-d2fe1ee36dbf.lovable.app-1785835748510.png" },
     ],
     links: [
       {
