@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, CalendarRange, LayoutDashboard, Moon, Sun } from "lucide-react";
+import { BookOpen, CalendarRange, LayoutDashboard, LogIn, LogOut, Moon, Sun } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
