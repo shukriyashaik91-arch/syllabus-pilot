@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, CalendarRange, LayoutDashboard, Moon, Sun } from "lucide-react";
+import { BookOpen, CalendarRange, LayoutDashboard, LogIn, LogOut, Moon, Sun } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -12,6 +13,7 @@ const NAV = [
 /** Shared chrome: brand, primary navigation, theme toggle. */
 export function AppShell({ children }: { children: ReactNode }) {
   const [dark, setDark] = useState(false);
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const stored = window.localStorage.getItem("study-planner:theme");
@@ -60,6 +62,24 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>
+            {user ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full"
+                onClick={() => void signOut()}
+              >
+                <LogOut className="size-4" aria-hidden />
+                <span className="hidden sm:inline">Sign out</span>
+              </Button>
+            ) : (
+              <Button asChild size="sm" className="rounded-full">
+                <Link to="/auth">
+                  <LogIn className="size-4" aria-hidden />
+                  <span className="hidden sm:inline">Save my plan</span>
+                </Link>
+              </Button>
+            )}
           </nav>
         </div>
       </header>
@@ -67,8 +87,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</main>
 
       <footer className="mx-auto max-w-6xl px-4 pb-10 text-xs text-muted-foreground sm:px-6">
-        Your syllabus, exams and progress stay on this device.
+        {user
+          ? `Signed in as ${user.email ?? "your account"} — your plan is saved to the cloud.`
+          : "Saved on this device only. Sign in to keep your plan across tabs and devices."}
       </footer>
+
     </div>
   );
 }
