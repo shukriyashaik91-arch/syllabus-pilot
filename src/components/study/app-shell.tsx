@@ -13,6 +13,7 @@ const NAV = [
 /** Shared chrome: brand, primary navigation, theme toggle. */
 export function AppShell({ children }: { children: ReactNode }) {
   const [dark, setDark] = useState(false);
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const stored = window.localStorage.getItem("study-planner:theme");
