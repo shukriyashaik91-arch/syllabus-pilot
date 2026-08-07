@@ -132,7 +132,7 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
   );
 
   // Remaining work per topic, highest priority first.
-  const queue = pending
+  const queue: { topic: Topic; remaining: number; score: number }[] = pending
     .map((topic) => ({
       topic,
       remaining: topic.estimatedHours,
