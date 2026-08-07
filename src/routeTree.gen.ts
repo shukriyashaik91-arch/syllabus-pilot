@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PlanRouteImport } from './routes/plan'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SetupRouteImport } from './routes/setup'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const PlanRoute = PlanRouteImport.update({
   path: '/plan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/plan': typeof PlanRoute
+  '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/plan': typeof PlanRoute
+  '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,16 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/plan': typeof PlanRoute
+  '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analytics' | '/auth' | '/plan' | '/setup'
+  fullPaths: '/' | '/analytics' | '/auth' | '/plan' | '/settings' | '/setup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analytics' | '/auth' | '/plan' | '/setup'
-  id: '__root__' | '/' | '/analytics' | '/auth' | '/plan' | '/setup'
+  to: '/' | '/analytics' | '/auth' | '/plan' | '/settings' | '/setup'
+  id:
+    '__root__' | '/' | '/analytics' | '/auth' | '/plan' | '/settings' | '/setup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +86,7 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
   PlanRoute: typeof PlanRoute
+  SettingsRoute: typeof SettingsRoute
   SetupRoute: typeof SetupRoute
 }
 
@@ -109,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/setup': {
       id: '/setup'
       path: '/setup'
@@ -124,6 +142,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
   PlanRoute: PlanRoute,
+  SettingsRoute: SettingsRoute,
   SetupRoute: SetupRoute,
 }
 export const routeTree = rootRouteImport

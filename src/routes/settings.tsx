@@ -164,7 +164,10 @@ function SettingsPage() {
               variant="outline"
               className="rounded-full"
               onClick={() => {
-                if (state.plan.length === 0) return toast.error("Generate a plan first.");
+                if (state.plan.length === 0) {
+                  toast.error("Generate a plan first.");
+                  return;
+                }
                 exportPlanPdf(state);
               }}
             >
@@ -175,7 +178,10 @@ function SettingsPage() {
               variant="outline"
               className="rounded-full"
               onClick={() => {
-                if (state.plan.length === 0) return toast.error("Generate a plan first.");
+                if (state.plan.length === 0) {
+                  toast.error("Generate a plan first.");
+                  return;
+                }
                 exportTimetablePdf(state);
               }}
             >
