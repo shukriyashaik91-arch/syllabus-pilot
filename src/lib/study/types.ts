@@ -1,11 +1,15 @@
 /**
  * Core domain types for the study planner.
- * Everything is stored locally (browser) for now — see storage.ts.
+ *
+ * The whole study workspace is one JSON document. It is written to
+ * localStorage instantly and mirrored to the signed-in user's cloud row.
  */
 
 export type Difficulty = "easy" | "medium" | "hard";
 export type TopicStatus = "pending" | "in_progress" | "done";
 export type SessionKind = "study" | "revision" | "practice" | "buffer";
+export type ThemeChoice = "light" | "dark" | "system";
+export type Intensity = "relaxed" | "balanced" | "intense";
 
 export interface Subject {
   id: string;
@@ -43,7 +47,9 @@ export interface Availability {
   weekendHoursPerDay: number;
   preferredTime: "morning" | "afternoon" | "evening" | "night";
   breakMinutes: number;
-  studyWeekends: boolean;
+  /** Weekday indices (0 = Sunday) the student is willing to study on. */
+  studyDays: number[];
+  intensity: Intensity;
   weakSubjectIds: string[];
 }
 
@@ -57,6 +63,38 @@ export interface PlanSession {
   hours: number;
   kind: SessionKind;
   done: boolean;
+  /** Clock time the block starts, e.g. "18:00". */
+  startTime?: string;
+}
+
+export interface Milestone {
+  id: string;
+  label: string;
+  /** ISO date the milestone should be reached by. */
+  date: string;
+  subjectId: string | null;
+}
+
+export interface SyllabusFile {
+  id: string;
+  name: string;
+  /** Path inside the private `syllabi` storage bucket. */
+  path: string;
+  size: number;
+  uploadedAt: string;
+}
+
+export interface NotificationPrefs {
+  sessionReminders: boolean;
+  examAlerts: boolean;
+  revisionNudges: boolean;
+  motivation: boolean;
+}
+
+export interface AppSettings {
+  theme: ThemeChoice;
+  displayName: string;
+  notifications: NotificationPrefs;
 }
 
 export interface StudyState {
@@ -65,6 +103,11 @@ export interface StudyState {
   exams: Exam[];
   availability: Availability;
   plan: PlanSession[];
+  milestones: Milestone[];
+  files: SyllabusFile[];
+  settings: AppSettings;
+  /** Short AI-written strategy notes shown on the dashboard. */
+  coachNotes: string[];
   /** ISO timestamp of the last plan generation. */
   planGeneratedAt: string | null;
   /** ISO dates on which at least one session was completed. */
@@ -76,8 +119,20 @@ export const defaultAvailability: Availability = {
   weekendHoursPerDay: 5,
   preferredTime: "evening",
   breakMinutes: 10,
-  studyWeekends: true,
+  studyDays: [0, 1, 2, 3, 4, 5, 6],
+  intensity: "balanced",
   weakSubjectIds: [],
+};
+
+export const defaultSettings: AppSettings = {
+  theme: "system",
+  displayName: "",
+  notifications: {
+    sessionReminders: true,
+    examAlerts: true,
+    revisionNudges: true,
+    motivation: true,
+  },
 };
 
 export const emptyState: StudyState = {
@@ -86,6 +141,14 @@ export const emptyState: StudyState = {
   exams: [],
   availability: defaultAvailability,
   plan: [],
+  milestones: [],
+  files: [],
+  settings: defaultSettings,
+  coachNotes: [],
   planGeneratedAt: null,
   activeDays: [],
 };
+
+export const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
+
+export const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
