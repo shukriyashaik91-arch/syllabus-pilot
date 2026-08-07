@@ -91,6 +91,12 @@ export interface PlanOptions {
   horizonDays?: number;
 }
 
+interface QueueItem {
+  topic: Topic;
+  remaining: number;
+  score: number;
+}
+
 export interface PlanResult {
   sessions: PlanSession[];
   milestones: Milestone[];
@@ -132,7 +138,7 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
   );
 
   // Remaining work per topic, highest priority first.
-  const queue: { topic: Topic; remaining: number; score: number }[] = pending
+  const queue: QueueItem[] = pending
     .map((topic) => ({
       topic,
       remaining: topic.estimatedHours,
@@ -211,17 +217,17 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
     let guard = 0;
     while (capacity >= 0.5 && guard < 40) {
       guard++;
-      const eligible = queue.filter((q) => {
+      const eligible: QueueItem[] = queue.filter((q) => {
         if (q.remaining <= 0) return false;
         const exam = examBySubject.get(q.topic.subjectId);
         return !(exam && iso >= exam.date);
       });
       if (eligible.length === 0) break;
 
-      const preferred = lastWasHard
+      const preferred: QueueItem | undefined = lastWasHard
         ? eligible.find((q) => q.topic.difficulty !== "hard")
         : eligible.find((q) => q.topic.difficulty === "hard");
-      const next = preferred ?? eligible[0]!;
+      const next: QueueItem = preferred ?? eligible[0]!;
 
       const chunk = Math.min(next.remaining, capacity, 2);
       push(session(iso, next.topic.subjectId, next.topic.id, next.topic.name, chunk, "study"));
