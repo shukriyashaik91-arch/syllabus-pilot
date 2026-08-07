@@ -207,7 +207,7 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
     }
 
     // 4. New study work, respecting exam deadlines and alternating difficulty.
-    let lastWasHard = false;
+    let lastWasHard: boolean = false;
     let guard = 0;
     while (capacity >= 0.5 && guard < 40) {
       guard++;
