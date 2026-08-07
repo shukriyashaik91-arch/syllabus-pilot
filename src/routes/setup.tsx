@@ -103,9 +103,14 @@ function SetupPage() {
       toast.error("Add your syllabus first.");
       return;
     }
-    const plan = generatePlan(state);
-    update((prev) => ({ ...prev, plan, planGeneratedAt: new Date().toISOString() }));
-    toast.success(`Timetable ready — ${plan.length} sessions scheduled.`);
+    const { sessions, milestones } = generatePlan(state);
+    update((prev) => ({
+      ...prev,
+      plan: sessions,
+      milestones,
+      planGeneratedAt: new Date().toISOString(),
+    }));
+    toast.success(`Timetable ready — ${sessions.length} sessions scheduled.`);
     navigate({ to: "/plan" });
   };
 
@@ -572,8 +577,14 @@ function AvailabilityPanel() {
             <p className="text-xs text-muted-foreground">Turn off to keep Saturdays and Sundays free.</p>
           </div>
           <Switch
-            checked={a.studyWeekends}
-            onCheckedChange={(v) => set({ studyWeekends: v })}
+            checked={a.studyDays.includes(0) || a.studyDays.includes(6)}
+            onCheckedChange={(v) =>
+              set({
+                studyDays: v
+                  ? Array.from(new Set([...a.studyDays, 0, 6])).sort()
+                  : a.studyDays.filter((d) => d !== 0 && d !== 6),
+              })
+            }
             aria-label="Study on weekends"
           />
         </div>
