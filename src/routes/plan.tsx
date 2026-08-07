@@ -63,8 +63,13 @@ function PlanPage() {
     });
 
   const regenerate = () => {
-    const plan = generatePlan(state);
-    update((prev) => ({ ...prev, plan, planGeneratedAt: new Date().toISOString() }));
+    const { sessions, milestones } = generatePlan(state);
+    update((prev) => ({
+      ...prev,
+      plan: sessions,
+      milestones,
+      planGeneratedAt: new Date().toISOString(),
+    }));
     toast.success("Timetable rebuilt around what's left.");
   };
 

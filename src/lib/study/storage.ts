@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { emptyState, type StudyState } from "./types";
+import {
+  defaultAvailability,
+  defaultSettings,
+  emptyState,
+  type StudyState,
+} from "./types";
 
 const STORAGE_KEY = "study-planner:v1";
 const EVENT = "study-planner:changed";
@@ -21,7 +26,18 @@ function normalize(parsed: Partial<StudyState>): StudyState {
   return {
     ...emptyState,
     ...parsed,
-    availability: { ...emptyState.availability, ...(parsed.availability ?? {}) },
+    availability: { ...defaultAvailability, ...(parsed.availability ?? {}) },
+    settings: {
+      ...defaultSettings,
+      ...(parsed.settings ?? {}),
+      notifications: {
+        ...defaultSettings.notifications,
+        ...(parsed.settings?.notifications ?? {}),
+      },
+    },
+    milestones: parsed.milestones ?? [],
+    files: parsed.files ?? [],
+    coachNotes: parsed.coachNotes ?? [],
   };
 }
 
