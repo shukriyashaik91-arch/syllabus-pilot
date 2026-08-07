@@ -155,6 +155,18 @@ function SetupPage() {
         <TabsContent value="syllabus" className="mt-4 space-y-4">
           <Card className="rounded-3xl">
             <CardHeader>
+              <CardTitle className="text-base">Upload a syllabus PDF</CardTitle>
+              <CardDescription>
+                Drag in your PDF and AI turns it into subjects, units and timed topics.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SyllabusUpload />
+            </CardContent>
+          </Card>
+          <Card className="rounded-3xl">
+
+            <CardHeader>
               <CardTitle className="text-base">Paste your syllabus</CardTitle>
               <CardDescription>
                 Use lines like <code>Subject: Physics</code>, <code>Unit 2: Optics</code> and{" "}
