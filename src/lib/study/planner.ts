@@ -211,28 +211,28 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
     let guard = 0;
     while (capacity >= 0.5 && guard < 40) {
       guard++;
-      const eligible = queue.filter((item) => {
-        if (item.remaining <= 0) return false;
-        const exam = examBySubject.get(item.topic.subjectId);
+      const eligible = queue.filter((q) => {
+        if (q.remaining <= 0) return false;
+        const exam = examBySubject.get(q.topic.subjectId);
         return !(exam && iso >= exam.date);
       });
       if (eligible.length === 0) break;
 
       const preferred = lastWasHard
-        ? eligible.find((i) => i.topic.difficulty !== "hard")
-        : eligible.find((i) => i.topic.difficulty === "hard");
-      const item = preferred ?? eligible[0]!;
+        ? eligible.find((q) => q.topic.difficulty !== "hard")
+        : eligible.find((q) => q.topic.difficulty === "hard");
+      const next = preferred ?? eligible[0]!;
 
-      const chunk = Math.min(item.remaining, capacity, 2);
-      push(session(iso, item.topic.subjectId, item.topic.id, item.topic.name, chunk, "study"));
-      item.remaining -= chunk;
+      const chunk = Math.min(next.remaining, capacity, 2);
+      push(session(iso, next.topic.subjectId, next.topic.id, next.topic.name, chunk, "study"));
+      next.remaining -= chunk;
       capacity -= chunk;
-      lastWasHard = item.topic.difficulty === "hard";
+      lastWasHard = next.topic.difficulty === "hard";
 
-      if (item.remaining <= 0) {
+      if (next.remaining <= 0) {
         const revisionDate = toISODate(new Date(date.getTime() + 3 * DAY_MS));
         const bucket = revisionQueue.get(revisionDate) ?? [];
-        bucket.push({ topic: item.topic });
+        bucket.push({ topic: next.topic });
         revisionQueue.set(revisionDate, bucket);
       }
     }
