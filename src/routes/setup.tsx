@@ -80,25 +80,6 @@ function SetupPage() {
     toast.success(`Imported ${topics.length} topics across ${subjects.length || "existing"} subjects.`);
   };
 
-  const addManualTopic = (subjectId: string, name: string) => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    update((prev) => ({
-      ...prev,
-      topics: [
-        ...prev.topics,
-        {
-          id: uid("top"),
-          subjectId,
-          unit: "General",
-          name: trimmed,
-          estimatedHours: 1.5,
-          difficulty: "medium",
-          status: "pending",
-        },
-      ],
-    }));
-  };
 
   const buildPlan = () => {
     if (state.topics.length === 0) {
@@ -223,37 +204,16 @@ function SetupPage() {
   );
 }
 
-function SubjectList({
-  onAddTopic,
-}: {
-  onAddTopic: (subjectId: string, name: string) => void;
-}) {
+function UnitsCard() {
   const { state, update } = useStudyState();
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [newSubject, setNewSubject] = useState("");
-
-  const removeTopic = (id: string) =>
-    update((prev) => ({
-      ...prev,
-      topics: prev.topics.filter((t) => t.id !== id),
-      plan: prev.plan.filter((s) => s.topicId !== id),
-    }));
-
-  const removeSubject = (id: string) =>
-    update((prev) => ({
-      ...prev,
-      subjects: prev.subjects.filter((s) => s.id !== id),
-      topics: prev.topics.filter((t) => t.subjectId !== id),
-      exams: prev.exams.filter((e) => e.subjectId !== id),
-      plan: prev.plan.filter((s) => s.subjectId !== id),
-    }));
 
   return (
     <Card className="rounded-3xl">
       <CardHeader>
-        <CardTitle className="text-base">Subjects & topics</CardTitle>
+        <CardTitle className="text-base">Units & topics</CardTitle>
         <CardDescription>
-          {state.topics.length} topics across {state.subjects.length} subjects.
+          Expand a unit to edit, add or delete topics, and tick off what you have already covered.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -285,79 +245,7 @@ function SubjectList({
           </Button>
         </div>
 
-        {state.subjects.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No subjects yet.</p>
-        ) : (
-          state.subjects.map((subject) => {
-            const topics = state.topics.filter((t) => t.subjectId === subject.id);
-            return (
-              <div key={subject.id} className="rounded-2xl border border-border p-4">
-                <div className="flex items-center gap-2">
-                  <span
-                    aria-hidden
-                    className="size-3 rounded-full"
-                    style={{ backgroundColor: `var(--color-chart-${subject.colorIndex})` }}
-                  />
-                  <h3 className="text-base font-semibold">{subject.name}</h3>
-                  <Badge variant="secondary" className="rounded-full text-[10px]">
-                    {topics.length} topics
-                  </Badge>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="ml-auto rounded-full"
-                    aria-label={`Remove ${subject.name}`}
-                    onClick={() => removeSubject(subject.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-
-                <ul className="mt-3 space-y-1.5">
-                  {topics.map((topic) => (
-                    <li key={topic.id} className="flex items-center gap-2 text-sm">
-                      <span className="truncate">{topic.name}</span>
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {topic.unit} · {topic.estimatedHours}h · {topic.difficulty}
-                      </span>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="ml-auto size-7 rounded-full"
-                        aria-label={`Remove ${topic.name}`}
-                        onClick={() => removeTopic(topic.id)}
-                      >
-                        <Trash2 className="size-3.5" />
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-3 flex gap-2">
-                  <Input
-                    value={drafts[subject.id] ?? ""}
-                    onChange={(e) =>
-                      setDrafts((d) => ({ ...d, [subject.id]: e.target.value.slice(0, 120) }))
-                    }
-                    placeholder="Add a topic"
-                    className="rounded-full"
-                    aria-label={`Add topic to ${subject.name}`}
-                  />
-                  <Button
-                    variant="outline"
-                    className="rounded-full"
-                    onClick={() => {
-                      onAddTopic(subject.id, drafts[subject.id] ?? "");
-                      setDrafts((d) => ({ ...d, [subject.id]: "" }));
-                    }}
-                  >
-                    Add
-                  </Button>
-                </div>
-              </div>
-            );
-          })
-        )}
+        <UnitManager />
       </CardContent>
     </Card>
   );
