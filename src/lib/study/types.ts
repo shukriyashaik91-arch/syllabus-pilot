@@ -21,13 +21,19 @@ export interface Subject {
 export interface Topic {
   id: string;
   subjectId: string;
+  /** Unit title, e.g. "Introduction to Cloud Computing". */
   unit: string;
+  /** Unit label as printed in the syllabus, e.g. "Unit 1". */
+  unitNumber?: string;
+  /** Position of the unit in the syllabus (1-based) — drives study order. */
+  unitOrder?: number;
   name: string;
   /** Estimated focused hours needed to cover the topic. */
   estimatedHours: number;
   difficulty: Difficulty;
   status: TopicStatus;
 }
+
 
 export interface Exam {
   id: string;
