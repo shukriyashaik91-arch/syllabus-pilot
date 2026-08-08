@@ -71,7 +71,12 @@ export interface PlanSession {
   done: boolean;
   /** Clock time the block starts, e.g. "18:00". */
   startTime?: string;
+  /** `${subjectId}|${unit}` — links the block to a syllabus unit. */
+  unitKey?: string;
+  /** Human label, e.g. "Unit 1: Introduction to Cloud Computing". */
+  unitLabel?: string;
 }
+
 
 export interface Milestone {
   id: string;
