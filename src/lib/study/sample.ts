@@ -7,6 +7,8 @@ export function sampleData(): { subjects: Subject[]; topics: Topic[]; exams: Exa
   const dbms: Subject = { id: uid("sub"), name: "DBMS", colorIndex: 2 };
   const maths: Subject = { id: uid("sub"), name: "Discrete Maths", colorIndex: 3 };
 
+  const unitOrders = new Map<string, number>();
+
   const t = (
     subject: Subject,
     unit: string,
@@ -17,11 +19,22 @@ export function sampleData(): { subjects: Subject[]; topics: Topic[]; exams: Exa
     id: uid("top"),
     subjectId: subject.id,
     unit,
+    unitNumber: `Unit ${unitOrder(subject.id, unit)}`,
+    unitOrder: unitOrder(subject.id, unit),
     name,
     estimatedHours: hours,
     difficulty,
     status: "pending",
   });
+
+  function unitOrder(subjectId: string, unit: string): number {
+    const key = `${subjectId}|${unit}`;
+    const existing = unitOrders.get(key);
+    if (existing) return existing;
+    const next = [...unitOrders.keys()].filter((k) => k.startsWith(`${subjectId}|`)).length + 1;
+    unitOrders.set(key, next);
+    return next;
+  }
 
   const topics: Topic[] = [
     t(dsa, "Linear structures", "Arrays and strings", 1.5, "easy"),

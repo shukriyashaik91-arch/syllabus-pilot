@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useStudyState } from "@/lib/study/storage";
+import { unitProgress, unitsBySubject } from "@/lib/study/units";
 import { withSample } from "@/lib/study/sample";
 import {
   computeStreak,
@@ -244,25 +245,32 @@ function Dashboard() {
         <Card className="rounded-3xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <GraduationCap className="size-4 text-accent" aria-hidden /> Pending topics
+              <GraduationCap className="size-4 text-accent" aria-hidden /> Unit progress
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm">
-              {state.topics
-                .filter((t) => t.status !== "done")
+            <ul className="space-y-3 text-sm">
+              {unitsBySubject(state.subjects, state.topics)
+                .flatMap(({ subject, units }) => units.map((unit) => ({ subject, unit })))
                 .slice(0, 6)
-                .map((t) => (
-                  <li key={t.id} className="flex items-center justify-between gap-3">
-                    <span className="truncate">{t.name}</span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {subjectName(state.subjects, t.subjectId)}
-                    </span>
-                  </li>
-                ))}
+                .map(({ subject, unit }) => {
+                  const percent = unitProgress(unit);
+                  return (
+                    <li key={unit.key} className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="truncate">{unit.label}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {subject.name} · {percent}%
+                        </span>
+                      </div>
+                      <Progress value={percent} className="h-1.5" />
+                    </li>
+                  );
+                })}
             </ul>
           </CardContent>
         </Card>
+
       </div>
     </AppShell>
   );

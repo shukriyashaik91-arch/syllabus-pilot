@@ -21,6 +21,18 @@ export function parseSyllabus(
 
   let currentSubject: Subject | null = null;
   let currentUnit = "General";
+  let currentUnitNumber = "";
+  const unitOrders = new Map<string, number>();
+
+  const orderFor = (subjectId: string, unit: string) => {
+    const key = `${subjectId}|${unit}`;
+    const existing = unitOrders.get(key);
+    if (existing) return existing;
+    const next =
+      [...unitOrders.entries()].filter(([k]) => k.startsWith(`${subjectId}|`)).length + 1;
+    unitOrders.set(key, next);
+    return next;
+  };
 
   const nextColor = () => ((existingSubjects.length + subjects.length) % 5) + 1;
 
@@ -46,16 +58,18 @@ export function parseSyllabus(
     if (subjectMatch?.[1]) {
       ensureSubject(subjectMatch[1].trim());
       currentUnit = "General";
+      currentUnitNumber = "";
       continue;
     }
 
     const unitMatch =
-      /^(?:##\s+|unit\s*[-\s]?\d*\s*[:\-.]?\s*|module\s*[-\s]?\d*\s*[:\-.]?\s*|chapter\s*[-\s]?\d*\s*[:\-.]?\s*)(.+)$/i.exec(
+      /^(?:##\s+|((?:unit|module|chapter|part)\s*[-\s]?[\dIVXivx]*)\s*[:\-.]?\s*)(.+)$/i.exec(
         line,
       );
-    if (unitMatch?.[1]) {
+    if (unitMatch?.[2]) {
       if (!currentSubject) ensureSubject("General Studies");
-      currentUnit = unitMatch[1].trim();
+      currentUnit = unitMatch[2].trim();
+      currentUnitNumber = (unitMatch[1] ?? "").trim();
       continue;
     }
 
@@ -67,6 +81,8 @@ export function parseSyllabus(
       id: uid("top"),
       subjectId: currentSubject!.id,
       unit: currentUnit,
+      unitNumber: currentUnitNumber,
+      unitOrder: orderFor(currentSubject!.id, currentUnit),
       name,
       estimatedHours: estimateHours(name),
       difficulty: guessDifficulty(name),
