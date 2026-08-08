@@ -91,10 +91,23 @@ export interface PlanOptions {
   horizonDays?: number;
 }
 
-interface QueueItem {
-  topic: Topic;
+/** A single schedulable piece of work inside a unit. */
+interface WorkItem {
+  kind: PlanSession["kind"];
+  topic: Topic | null;
+  title: string;
   remaining: number;
+  unitKey: string;
+  unitLabel: string;
+  subjectId: string;
+}
+
+/** All of a subject's units, flattened into the exact order they must be done. */
+interface SubjectQueue {
+  subjectId: string;
   score: number;
+  items: WorkItem[];
+  cursor: number;
 }
 
 export interface PlanResult {
@@ -103,15 +116,14 @@ export interface PlanResult {
 }
 
 /**
- * Generates a day-by-day timetable.
+ * Generates a day-by-day, unit-by-unit timetable.
  *
  * Strategy:
- *  1. Score every pending topic (urgency x importance x difficulty x weakness).
- *  2. Walk forward day by day, filling each day's capacity with the highest
- *     scoring topics whose exam has not yet passed. Long topics are split into
- *     chunks of at most 2 focused hours, and hard blocks alternate with easier
- *     ones so a day never stacks three brutal topics in a row.
- *  3. Schedule a spaced revision block ~3 days after a topic is first studied.
+ *  1. Group each subject's pending topics into units, in syllabus order.
+ *  2. Score subjects (urgency x importance x difficulty x weakness) to decide
+ *     which subject gets the next block — but within a subject the units are
+ *     always worked through in order: a unit is finished before the next begins.
+ *  3. Every unit ends with a revision block and a practice-questions block.
  *  4. Reserve the two days before each exam for revision + a mock test.
  *  5. Leave one light buffer day per fortnight to absorb slippage.
  */
@@ -137,18 +149,59 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
     Math.min(180, lastExam ? daysBetween(start, lastExam) + 1 : horizon),
   );
 
-  // Remaining work per topic, highest priority first.
-  const queue: QueueItem[] = pending
-    .map((topic) => ({
-      topic,
-      remaining: topic.estimatedHours,
-      score: topicScore(topic, examBySubject.get(topic.subjectId), availability, start),
-    }))
-    .sort((a, b) => b.score - a.score);
+  // Unit-ordered work queues, one per subject.
+  const queues: SubjectQueue[] = [];
+  for (const subject of subjects) {
+    const subjectTopics = pending.filter((t) => t.subjectId === subject.id);
+    if (subjectTopics.length === 0) continue;
+
+    const items: WorkItem[] = [];
+    for (const unit of groupUnits(subjectTopics, subject.id)) {
+      for (const topic of unit.topics) {
+        items.push({
+          kind: "study",
+          topic,
+          title: topic.name,
+          remaining: topic.estimatedHours,
+          unitKey: unit.key,
+          unitLabel: unit.label,
+          subjectId: subject.id,
+        });
+      }
+      const unitHours = unit.topics.reduce((h, t) => h + t.estimatedHours, 0);
+      items.push({
+        kind: "revision",
+        topic: null,
+        title: `Revise ${unit.label}`,
+        remaining: Math.min(2, Math.max(0.5, Math.round(unitHours * 0.3 * 2) / 2)),
+        unitKey: unit.key,
+        unitLabel: unit.label,
+        subjectId: subject.id,
+      });
+      items.push({
+        kind: "practice",
+        topic: null,
+        title: `Practice questions — ${unit.label}`,
+        remaining: 1,
+        unitKey: unit.key,
+        unitLabel: unit.label,
+        subjectId: subject.id,
+      });
+    }
+
+    queues.push({
+      subjectId: subject.id,
+      cursor: 0,
+      items,
+      score: Math.max(
+        ...subjectTopics.map((t) =>
+          topicScore(t, examBySubject.get(subject.id), availability, start),
+        ),
+      ),
+    });
+  }
 
   const sessions: PlanSession[] = [];
-  /** date -> revision blocks queued for that date */
-  const revisionQueue = new Map<string, { topic: Topic }[]>();
   const examLockedDays = new Map<string, Exam>();
 
   for (const exam of exams) {
@@ -157,6 +210,8 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
       if (d >= start) examLockedDays.set(d, exam);
     }
   }
+
+  const remainingWork = () => queues.some((q) => q.cursor < q.items.length);
 
   for (let dayOffset = 0; dayOffset < totalDays; dayOffset++) {
     const date = new Date(parseISODate(start).getTime() + dayOffset * DAY_MS);
@@ -188,11 +243,11 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
 
     // 2. A light buffer day every 14 days keeps the plan recoverable.
     const isBufferDay = dayOffset > 0 && dayOffset % 14 === 13;
-    if (isBufferDay) {
+    if (isBufferDay && remainingWork()) {
       push(
         session(
           iso,
-          queue[0]?.topic.subjectId ?? subjects[0]!.id,
+          queues[0]?.subjectId ?? subjects[0]!.id,
           null,
           "Buffer day — catch up on anything you missed",
           Math.min(capacity, 2),
@@ -203,54 +258,29 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
       continue;
     }
 
-    // 3. Spaced revision blocks that came due today.
-    for (const item of revisionQueue.get(iso) ?? []) {
-      if (capacity < 0.5) break;
-      push(
-        session(iso, item.topic.subjectId, item.topic.id, `Revise: ${item.topic.name}`, 0.5, "revision"),
-      );
-      capacity -= 0.5;
-    }
-
-    // 4. New study work, respecting exam deadlines and alternating difficulty.
-    let lastWasHard: boolean = false;
+    // 3. Work through units in order, subject by subject.
     let guard = 0;
     while (capacity >= 0.5 && guard < 40) {
       guard++;
-      const eligible: QueueItem[] = queue.filter((q) => {
-        if (q.remaining <= 0) return false;
-        const exam = examBySubject.get(q.topic.subjectId);
+      const eligible = queues.filter((q) => {
+        if (q.cursor >= q.items.length) return false;
+        const exam = examBySubject.get(q.subjectId);
         return !(exam && iso >= exam.date);
       });
       if (eligible.length === 0) break;
 
-      const preferred: QueueItem | undefined = lastWasHard
-        ? eligible.find((q) => q.topic.difficulty !== "hard")
-        : eligible.find((q) => q.topic.difficulty === "hard");
-      const next: QueueItem = preferred ?? eligible[0]!;
+      const queue = eligible.reduce((best, q) => (q.score > best.score ? q : best), eligible[0]!);
+      const item = queue.items[queue.cursor]!;
 
-      const chunk = Math.min(next.remaining, capacity, 2);
-      push(session(iso, next.topic.subjectId, next.topic.id, next.topic.name, chunk, "study"));
-      next.remaining -= chunk;
-      capacity -= chunk;
-      lastWasHard = next.topic.difficulty === "hard";
+      const chunk = Math.min(item.remaining, capacity, 2);
+      const block = session(iso, item.subjectId, item.topic?.id ?? null, item.title, chunk, item.kind);
+      block.unitKey = item.unitKey;
+      block.unitLabel = item.unitLabel;
+      push(block);
 
-      if (next.remaining <= 0) {
-        const revisionDate = toISODate(new Date(date.getTime() + 3 * DAY_MS));
-        const bucket = revisionQueue.get(revisionDate) ?? [];
-        bucket.push({ topic: next.topic });
-        revisionQueue.set(revisionDate, bucket);
-      }
-    }
-
-    // 5. Leftover time becomes a practice buffer.
-    if (capacity >= 1 && queue.some((q) => q.remaining > 0)) {
-      const first = queue.find((q) => q.remaining > 0);
-      if (first) {
-        push(
-          session(iso, first.topic.subjectId, null, "Practice problems & active recall", Math.min(capacity, 1), "practice"),
-        );
-      }
+      item.remaining = Math.round((item.remaining - chunk) * 10) / 10;
+      capacity = Math.round((capacity - chunk) * 10) / 10;
+      if (item.remaining <= 0) queue.cursor++;
     }
 
     assignTimes(dayBlocks, availability);
@@ -258,6 +288,7 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
 
   return { sessions, milestones: buildMilestones(sessions, subjects, exams) };
 }
+
 
 /** Lays blocks out back-to-back from the preferred start time, with breaks. */
 function assignTimes(blocks: PlanSession[], availability: Availability) {
