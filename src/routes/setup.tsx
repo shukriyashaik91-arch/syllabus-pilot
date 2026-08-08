@@ -22,6 +22,7 @@ import {
 import { uid, useStudyState } from "@/lib/study/storage";
 import { parseSyllabus } from "@/lib/study/parse";
 import { SyllabusUpload } from "@/components/study/syllabus-upload";
+import { UnitManager } from "@/components/study/unit-manager";
 import { generatePlan, todayISO } from "@/lib/study/planner";
 import { withSample } from "@/lib/study/sample";
 import type { Difficulty, Exam } from "@/lib/study/types";
@@ -207,7 +208,7 @@ function SetupPage() {
             </CardContent>
           </Card>
 
-          <SubjectList onAddTopic={addManualTopic} />
+          <UnitsCard />
         </TabsContent>
 
         <TabsContent value="exams" className="mt-4">
