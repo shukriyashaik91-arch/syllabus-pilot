@@ -205,7 +205,7 @@ function SetupPage() {
 }
 
 function UnitsCard() {
-  const { state, update } = useStudyState();
+  const { update } = useStudyState();
   const [newSubject, setNewSubject] = useState("");
 
   return (
