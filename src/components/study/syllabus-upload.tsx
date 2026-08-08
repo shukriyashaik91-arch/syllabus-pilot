@@ -1,10 +1,17 @@
 import { useRef, useState } from "react";
-import { FileUp, Loader2, Sparkles, X } from "lucide-react";
+import { FileUp, Loader2, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { extractPdfText, MAX_PDF_BYTES } from "@/lib/study/pdf";
@@ -14,7 +21,7 @@ import type { Subject, Topic } from "@/lib/study/types";
 
 type Phase = "idle" | "reading" | "uploading" | "thinking";
 
-/** Drag-and-drop PDF upload → text extraction → AI structuring → preview → apply. */
+/** Drag-and-drop PDF upload → text extraction → AI unit breakdown → edit → apply. */
 export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
   const { state, update } = useStudyState();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -23,6 +30,7 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
   const [progress, setProgress] = useState(0);
   const [fileName, setFileName] = useState<string | null>(null);
   const [preview, setPreview] = useState<AiSyllabus | null>(null);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
 
   const busy = phase !== "idle";
 
@@ -69,13 +77,39 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
         },
       });
       setPreview(result);
-      toast.success(`Read ${pages} page${pages === 1 ? "" : "s"} — review the breakdown below.`);
+      const units = result.subjects.reduce((n, s) => n + s.units.length, 0);
+      toast.success(`Read ${pages} page${pages === 1 ? "" : "s"} — found ${units} units.`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not read that PDF.");
     } finally {
       setPhase("idle");
       setProgress(0);
     }
+  };
+
+  /** Structural edits on the preview before it is committed to the syllabus. */
+  const editUnit = (
+    subjectIndex: number,
+    unitIndex: number,
+    mutate: (unit: AiSyllabus["subjects"][number]["units"][number]) => void,
+  ) => {
+    setPreview((prev) => {
+      if (!prev) return prev;
+      const next: AiSyllabus = structuredClone(prev);
+      const unit = next.subjects[subjectIndex]?.units[unitIndex];
+      if (unit) mutate(unit);
+      return next;
+    });
+  };
+
+  const removeUnit = (subjectIndex: number, unitIndex: number) => {
+    setPreview((prev) => {
+      if (!prev) return prev;
+      const next: AiSyllabus = structuredClone(prev);
+      next.subjects[subjectIndex]?.units.splice(unitIndex, 1);
+      next.subjects = next.subjects.filter((s) => s.units.length > 0);
+      return next.subjects.length ? next : null;
+    });
   };
 
   const apply = () => {
@@ -96,17 +130,25 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
         };
       if (!existing) subjects.push(subject);
 
-      for (const t of aiSubject.topics) {
-        topics.push({
-          id: uid("top"),
-          subjectId: subject.id,
-          unit: t.unit,
-          name: t.name,
-          estimatedHours: t.estimatedHours,
-          difficulty: t.difficulty,
-          status: "pending",
-        });
-      }
+      const offset = new Set(
+        state.topics.filter((t) => t.subjectId === subject.id).map((t) => t.unit),
+      ).size;
+
+      aiSubject.units.forEach((unit, unitIndex) => {
+        for (const t of unit.topics) {
+          topics.push({
+            id: uid("top"),
+            subjectId: subject.id,
+            unit: unit.unitTitle,
+            unitNumber: unit.unitNumber,
+            unitOrder: offset + unitIndex + 1,
+            name: t.name,
+            estimatedHours: t.estimatedHours,
+            difficulty: t.difficulty,
+            status: "pending",
+          });
+        }
+      });
     }
 
     update((prev) => ({
@@ -121,10 +163,17 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
     onApplied?.();
   };
 
+  const unitCount = preview?.subjects.reduce((n, s) => n + s.units.length, 0) ?? 0;
+  const topicCount =
+    preview?.subjects.reduce(
+      (n, s) => n + s.units.reduce((m, u) => m + u.topics.length, 0),
+      0,
+    ) ?? 0;
   const totalHours = preview
     ? Math.round(
         preview.subjects.reduce(
-          (sum, s) => sum + s.topics.reduce((h, t) => h + t.estimatedHours, 0),
+          (sum, s) =>
+            sum + s.units.reduce((h, u) => h + u.topics.reduce((x, t) => x + t.estimatedHours, 0), 0),
           0,
         ) * 10,
       ) / 10
@@ -164,7 +213,7 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
           <p className="font-medium">
             {phase === "reading" && "Extracting text…"}
             {phase === "uploading" && "Saving your file…"}
-            {phase === "thinking" && "AI is structuring your syllabus…"}
+            {phase === "thinking" && "AI is detecting units and topics…"}
             {phase === "idle" && "Drop your syllabus PDF here"}
           </p>
           <p className="text-xs text-muted-foreground">
@@ -191,12 +240,11 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
             <div className="min-w-0">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
-                <span className="truncate">AI breakdown</span>
+                <span className="truncate">Unit-wise breakdown</span>
               </CardTitle>
               <CardDescription>
-                {preview.subjects.length} subject
-                {preview.subjects.length === 1 ? "" : "s"} ·{" "}
-                {preview.subjects.reduce((n, s) => n + s.topics.length, 0)} topics · ~{totalHours}h
+                {unitCount} unit{unitCount === 1 ? "" : "s"} · {topicCount} topics · ~{totalHours}h ·
+                edit anything before adding it
               </CardDescription>
             </div>
             <Button variant="ghost" size="icon" onClick={() => setPreview(null)} aria-label="Discard breakdown">
@@ -204,29 +252,120 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="max-h-72 space-y-4 overflow-y-auto pr-1">
-              {preview.subjects.map((subject) => (
-                <div key={subject.name}>
+            <div className="max-h-[26rem] space-y-4 overflow-y-auto pr-1">
+              {preview.subjects.map((subject, subjectIndex) => (
+                <div key={`${subject.name}-${subjectIndex}`}>
                   <p className="font-display text-sm font-semibold">{subject.name}</p>
-                  <ul className="mt-1 space-y-1">
-                    {subject.topics.map((topic, i) => (
-                      <li
-                        key={`${subject.name}-${i}`}
-                        className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl bg-secondary/50 px-3 py-1.5 text-sm"
-                      >
-                        <span className="min-w-0 truncate">
-                          <span className="text-muted-foreground">{topic.unit} · </span>
-                          {topic.name}
-                        </span>
-                        <span className="flex shrink-0 items-center gap-2">
-                          <Badge variant="outline" className="rounded-full text-[10px] capitalize">
-                            {topic.difficulty}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{topic.estimatedHours}h</span>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  <Accordion type="multiple" className="mt-1">
+                    {subject.units.map((unit, unitIndex) => {
+                      const draftKey = `${subjectIndex}-${unitIndex}`;
+                      const hours =
+                        Math.round(unit.topics.reduce((h, t) => h + t.estimatedHours, 0) * 10) / 10;
+                      return (
+                        <AccordionItem
+                          key={draftKey}
+                          value={draftKey}
+                          className="rounded-2xl border border-border px-3 mb-2"
+                        >
+                          <AccordionTrigger className="py-3 hover:no-underline">
+                            <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2 pr-2 text-left">
+                              <span className="truncate font-medium">
+                                {unit.unitNumber}: {unit.unitTitle}
+                              </span>
+                              <Badge variant="secondary" className="rounded-full text-[10px]">
+                                {unit.topics.length} topics · {hours}h
+                              </Badge>
+                            </span>
+                          </AccordionTrigger>
+                          <AccordionContent className="space-y-2 pb-3">
+                            <ul className="space-y-1.5">
+                              {unit.topics.map((topic, topicIndex) => (
+                                <li
+                                  key={topicIndex}
+                                  className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2"
+                                >
+                                  <Input
+                                    value={topic.name}
+                                    aria-label={`Topic ${topicIndex + 1} of ${unit.unitNumber}`}
+                                    onChange={(e) => {
+                                      const value = e.target.value.slice(0, 200);
+                                      editUnit(subjectIndex, unitIndex, (u) => {
+                                        const target = u.topics[topicIndex];
+                                        if (target) target.name = value;
+                                      });
+                                    }}
+                                    className="h-9 rounded-full text-sm"
+                                  />
+                                  <Input
+                                    type="number"
+                                    min={0.5}
+                                    max={3}
+                                    step={0.5}
+                                    value={topic.estimatedHours}
+                                    aria-label={`Hours for ${topic.name}`}
+                                    onChange={(e) => {
+                                      const value = Math.min(3, Math.max(0.5, Number(e.target.value) || 0.5));
+                                      editUnit(subjectIndex, unitIndex, (u) => {
+                                        const target = u.topics[topicIndex];
+                                        if (target) target.estimatedHours = value;
+                                      });
+                                    }}
+                                    className="h-9 w-20 rounded-full text-sm"
+                                  />
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="size-9 rounded-full"
+                                    aria-label={`Delete ${topic.name}`}
+                                    onClick={() =>
+                                      editUnit(subjectIndex, unitIndex, (u) => {
+                                        u.topics.splice(topicIndex, 1);
+                                      })
+                                    }
+                                  >
+                                    <Trash2 className="size-4" />
+                                  </Button>
+                                </li>
+                              ))}
+                            </ul>
+
+                            <div className="flex gap-2">
+                              <Input
+                                value={drafts[draftKey] ?? ""}
+                                placeholder="Add a topic to this unit"
+                                aria-label={`Add a topic to ${unit.unitNumber}`}
+                                onChange={(e) =>
+                                  setDrafts((d) => ({ ...d, [draftKey]: e.target.value.slice(0, 200) }))
+                                }
+                                className="h-9 rounded-full text-sm"
+                              />
+                              <Button
+                                variant="outline"
+                                className="h-9 shrink-0 rounded-full"
+                                onClick={() => {
+                                  const name = (drafts[draftKey] ?? "").trim();
+                                  if (!name) return;
+                                  editUnit(subjectIndex, unitIndex, (u) => {
+                                    u.topics.push({ name, estimatedHours: 1, difficulty: "medium" });
+                                  });
+                                  setDrafts((d) => ({ ...d, [draftKey]: "" }));
+                                }}
+                              >
+                                <Plus className="size-4" aria-hidden /> Add
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                className="h-9 shrink-0 rounded-full text-destructive"
+                                onClick={() => removeUnit(subjectIndex, unitIndex)}
+                              >
+                                Delete unit
+                              </Button>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      );
+                    })}
+                  </Accordion>
                 </div>
               ))}
             </div>
