@@ -166,65 +166,96 @@ function Dashboard() {
           <h1 className="text-3xl sm:text-4xl">Today&rsquo;s plan</h1>
           <p className="mt-1 text-sm text-muted-foreground">{quote}</p>
         </div>
-        <Button asChild variant="outline" className="rounded-full">
+        <Button asChild variant="outline" className="press rounded-full">
           <Link to="/plan">View full timetable</Link>
         </Button>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <Card className="rounded-3xl lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base">Scheduled blocks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {todaySessions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Nothing scheduled today.{" "}
-                <Link to="/setup" className="text-accent underline underline-offset-4">
-                  Generate a plan
-                </Link>{" "}
-                to fill your week.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {todaySessions.map((s) => (
-                  <SessionCard
-                    key={s.id}
-                    session={s}
-                    subjects={state.subjects}
-                    onToggle={toggleSession}
-                  />
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-3xl">
-          <CardHeader>
-            <CardTitle className="text-base">Syllabus progress</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <ProgressRing
-              value={progress}
-              label="covered"
-              caption={`${doneTopics} of ${state.topics.length} topics completed`}
-            />
-            <div className="grid w-full grid-cols-2 gap-3 text-center">
-              <Stat icon={<Flame className="size-4" />} label="Day streak" value={String(streak)} />
-              <Stat
-                icon={<Target className="size-4" />}
-                label="Hours this week"
-                value={`${weekDoneHours}/${weekHours}`}
-              />
-            </div>
-            <div className="w-full">
-              <Progress value={weekHours ? (weekDoneHours / weekHours) * 100 : 0} />
-              <p className="mt-2 text-xs text-muted-foreground">Weekly goal progress</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          icon={<Target className="size-4" />}
+          label="Study progress"
+          value={progress}
+          decimals={0}
+          suffix="%"
+          caption={`${doneTopics}/${state.topics.length} topics`}
+          delay={0}
+        />
+        <MetricCard
+          icon={<CalendarClock className="size-4" />}
+          label="Upcoming exams"
+          value={state.exams.filter((e) => e.date >= today).length}
+          caption={upcomingExams[0] ? `Next: ${upcomingExams[0].name}` : "None scheduled"}
+          delay={70}
+        />
+        <MetricCard
+          icon={<Flame className="size-4" />}
+          label="Study streak"
+          value={streak}
+          caption={streak > 0 ? "days in a row" : "start today"}
+          delay={140}
+        />
+        <MetricCard
+          icon={<GraduationCap className="size-4" />}
+          label="Completed topics"
+          value={doneTopics}
+          caption={`${weekDoneHours}/${weekHours}h done this week`}
+          delay={210}
+        />
       </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <TiltCard className="lg:col-span-2" max={3}>
+          <Card className="depth-card hover:depth-card-hover h-full rounded-3xl">
+            <CardHeader>
+              <CardTitle className="text-base">Scheduled blocks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {todaySessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nothing scheduled today.{" "}
+                  <Link to="/setup" className="text-accent underline underline-offset-4">
+                    Generate a plan
+                  </Link>{" "}
+                  to fill your week.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {todaySessions.map((s, i) => (
+                    <div key={s.id} className="rise-in" style={{ animationDelay: `${i * 60}ms` }}>
+                      <SessionCard
+                        session={s}
+                        subjects={state.subjects}
+                        onToggle={toggleSession}
+                      />
+                    </div>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </TiltCard>
+
+        <TiltCard max={4}>
+          <Card className="depth-card hover:depth-card-hover h-full rounded-3xl">
+            <CardHeader>
+              <CardTitle className="text-base">Syllabus progress</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-4">
+              <ProgressRing
+                value={progress}
+                label="covered"
+                caption={`${doneTopics} of ${state.topics.length} topics completed`}
+              />
+              <div className="w-full">
+                <Progress value={weekHours ? (weekDoneHours / weekHours) * 100 : 0} />
+                <p className="mt-2 text-xs text-muted-foreground">Weekly goal progress</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TiltCard>
+      </div>
+
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <Card className="rounded-3xl">
