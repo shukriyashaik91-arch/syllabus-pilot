@@ -2,7 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarRange, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/study/app-shell";
+import { TiltCard } from "@/components/study/tilt-card";
+import { Scene3D } from "@/components/three/scene-3d";
 import { SessionCard } from "@/components/study/session-card";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStudyState } from "@/lib/study/storage";
