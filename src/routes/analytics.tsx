@@ -15,6 +15,7 @@ import {
   YAxis,
 } from "recharts";
 import { Award, Clock, Flame, Target } from "lucide-react";
+import { TiltCard } from "@/components/study/tilt-card";
 import { AppShell } from "@/components/study/app-shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
