@@ -258,7 +258,8 @@ function Dashboard() {
 
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <Card className="rounded-3xl">
+        <Card className="depth-card hover:depth-card-hover rounded-3xl">
+
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <CalendarClock className="size-4 text-accent" aria-hidden /> Upcoming exams
@@ -293,7 +294,7 @@ function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl">
+        <Card className="depth-card hover:depth-card-hover rounded-3xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <GraduationCap className="size-4 text-accent" aria-hidden /> Unit progress
