@@ -364,5 +364,3 @@ function MetricCard({
     </TiltCard>
   );
 }
-
-}
