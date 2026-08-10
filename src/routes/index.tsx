@@ -328,14 +328,41 @@ function Dashboard() {
   );
 }
 
-function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+/** Depth + tilt metric tile with animated statistics. */
+function MetricCard({
+  icon,
+  label,
+  value,
+  caption,
+  decimals = 0,
+  suffix = "",
+  delay = 0,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  caption: string;
+  decimals?: number;
+  suffix?: string;
+  delay?: number;
+}) {
   return (
-    <div className="rounded-2xl bg-secondary/60 px-3 py-3">
-      <span className="mx-auto flex size-7 items-center justify-center rounded-full bg-card text-accent">
-        {icon}
-      </span>
-      <p className="mt-1.5 font-display text-xl">{value}</p>
-      <p className="text-[11px] text-muted-foreground">{label}</p>
-    </div>
+    <TiltCard className="rise-in" max={8}>
+      <div
+        className="depth-card hover:depth-card-hover glass-panel rounded-3xl p-4"
+        style={{ animationDelay: `${delay}ms` }}
+      >
+        <span className="flex size-8 items-center justify-center rounded-full bg-secondary text-accent">
+          {icon}
+        </span>
+        <p className="mt-3 font-display text-3xl">
+          <CountUp value={value} decimals={decimals} suffix={suffix} />
+        </p>
+        <p className="text-sm font-medium">{label}</p>
+        <p className="mt-0.5 truncate text-xs text-muted-foreground">{caption}</p>
+      </div>
+    </TiltCard>
   );
+}
+
 }
