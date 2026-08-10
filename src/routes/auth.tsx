@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/study/app-shell";
+import { Scene3D } from "@/components/three/scene-3d";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -161,7 +163,9 @@ function AuthPage() {
             </Tabs>
           </CardContent>
         </Card>
+        </div>
       </div>
+
     </AppShell>
   );
 }
