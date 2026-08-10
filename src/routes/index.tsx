@@ -113,8 +113,9 @@ function Dashboard() {
         <section className="paper relative overflow-hidden rounded-3xl border border-border bg-card p-8 sm:p-14">
           <Scene3D
             variant="hero"
-            className="absolute inset-0 h-full w-full opacity-70 [mask-image:radial-gradient(circle_at_60%_45%,black,transparent_75%)]"
+            className="pointer-events-none absolute inset-0 h-full w-full scale-125 opacity-25 blur-[1px] [mask-image:radial-gradient(circle_at_50%_50%,transparent_28%,black_70%)]"
           />
+
           <div className="relative z-10 text-center">
             <span className="rise-in inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
               <Sparkles className="size-3.5" aria-hidden /> Adaptive study planning
