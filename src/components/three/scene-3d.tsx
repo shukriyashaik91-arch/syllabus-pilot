@@ -36,7 +36,7 @@ export function Scene3D({ variant, className, fallbackClassName, active }: Scene
     <div aria-hidden className={cn("pointer-events-none select-none", className)}>
       {enabled ? (
         <Suspense fallback={fallback}>
-          <SceneContent variant={variant} lite={lite} active={active} />
+          <SceneContent variant={variant} lite={lite} active={active ?? false} />
         </Suspense>
       ) : (
         fallback
