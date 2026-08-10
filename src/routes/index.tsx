@@ -2,8 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarClock, Flame, GraduationCap, Sparkles, Target } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/study/app-shell";
+import { Scene3D } from "@/components/three/scene-3d";
+import { TiltCard } from "@/components/study/tilt-card";
+import { CountUp } from "@/components/study/count-up";
 import { ProgressRing } from "@/components/study/progress-ring";
 import { SessionCard } from "@/components/study/session-card";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
