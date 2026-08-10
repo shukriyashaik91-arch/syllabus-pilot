@@ -106,38 +106,54 @@ function Dashboard() {
   if (state.topics.length === 0) {
     return (
       <AppShell>
-        <section className="paper rounded-3xl border border-border bg-card p-8 text-center sm:p-14">
-          <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-            <Sparkles className="size-3.5" aria-hidden /> Adaptive study planning
-          </span>
-          <h1 className="mx-auto mt-5 max-w-2xl text-balance text-4xl sm:text-5xl">
-            Turn your syllabus into a plan you can actually follow
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Paste your syllabus, add your exam dates and free hours. Studyloop
-            prioritises weak and heavy topics, schedules spaced revision, and keeps
-            two days before each exam free for mock tests.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button asChild size="lg" className="rounded-full">
-              <Link to="/setup">Add my syllabus</Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="rounded-full"
-              onClick={() => {
-                update(withSample);
-                toast.success("Sample syllabus loaded — generate your plan in Setup.");
-              }}
+        <section className="paper relative overflow-hidden rounded-3xl border border-border bg-card p-8 sm:p-14">
+          <Scene3D
+            variant="hero"
+            className="absolute inset-0 h-full w-full opacity-70 [mask-image:radial-gradient(circle_at_60%_45%,black,transparent_75%)]"
+          />
+          <div className="relative z-10 text-center">
+            <span className="rise-in inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
+              <Sparkles className="size-3.5" aria-hidden /> Adaptive study planning
+            </span>
+            <h1
+              className="rise-in mx-auto mt-5 max-w-2xl text-balance text-4xl sm:text-5xl"
+              style={{ animationDelay: "80ms" }}
             >
-              Try sample data
-            </Button>
+              Turn your syllabus into a plan you can actually follow
+            </h1>
+            <p
+              className="rise-in mx-auto mt-4 max-w-xl text-muted-foreground"
+              style={{ animationDelay: "160ms" }}
+            >
+              Paste your syllabus, add your exam dates and free hours. Studyloop
+              prioritises weak and heavy topics, schedules spaced revision, and keeps
+              two days before each exam free for mock tests.
+            </p>
+            <div
+              className="rise-in mt-8 flex flex-wrap justify-center gap-3"
+              style={{ animationDelay: "240ms" }}
+            >
+              <Button asChild size="lg" className="press rounded-full">
+                <Link to="/setup">Add my syllabus</Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="press rounded-full glass-panel"
+                onClick={() => {
+                  update(withSample);
+                  toast.success("Sample syllabus loaded — generate your plan in Setup.");
+                }}
+              >
+                Try sample data
+              </Button>
+            </div>
           </div>
         </section>
       </AppShell>
     );
   }
+
 
   return (
     <AppShell>
