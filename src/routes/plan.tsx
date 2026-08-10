@@ -110,39 +110,46 @@ function PlanPage() {
         </Card>
       ) : (
         <div className="mt-6 space-y-4">
-          {[...byDate.entries()].map(([date, sessions]) => (
-            <Card key={date} className="rounded-3xl">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-baseline gap-2 text-base">
-                  <span>
-                    {date === today
-                      ? "Today"
-                      : parseISODate(date).toLocaleDateString(undefined, {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "short",
-                        })}
-                  </span>
-                  <span className="text-xs font-normal text-muted-foreground">
-                    {sessions.reduce((sum, s) => sum + s.hours, 0)}h
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {sessions.map((s) => (
-                    <SessionCard
-                      key={s.id}
-                      session={s}
-                      subjects={state.subjects}
-                      onToggle={toggleSession}
-                    />
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+          {[...byDate.entries()].map(([date, sessions], dayIndex) => (
+            <TiltCard key={date} max={2} className="rise-in" >
+              <Card
+                className="depth-card hover:depth-card-hover rounded-3xl"
+                style={{ animationDelay: `${Math.min(dayIndex, 8) * 60}ms` }}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-baseline gap-2 text-base">
+                    <span>
+                      {date === today
+                        ? "Today"
+                        : parseISODate(date).toLocaleDateString(undefined, {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "short",
+                          })}
+                    </span>
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {sessions.reduce((sum, s) => sum + s.hours, 0)}h
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {sessions.map((s, i) => (
+                      <div key={s.id} className="rise-in" style={{ animationDelay: `${i * 50}ms` }}>
+                        <SessionCard
+                          session={s}
+                          subjects={state.subjects}
+                          onToggle={toggleSession}
+                        />
+                      </div>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </TiltCard>
           ))}
         </div>
+
       )}
     </AppShell>
   );
