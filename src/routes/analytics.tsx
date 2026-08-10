@@ -218,17 +218,20 @@ function Stat({
   hint: string;
 }) {
   return (
-    <Card className="rounded-3xl">
-      <CardContent className="pt-6">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-            {icon}
-          </span>
-          <span className="truncate text-sm">{label}</span>
-        </div>
-        <p className="mt-3 font-display text-3xl font-semibold tracking-tight">{value}</p>
-        <p className="text-xs text-muted-foreground">{hint}</p>
-      </CardContent>
-    </Card>
+    <TiltCard className="rise-in" max={8}>
+      <Card className="depth-card hover:depth-card-hover h-full rounded-3xl">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+              {icon}
+            </span>
+            <span className="truncate text-sm">{label}</span>
+          </div>
+          <p className="mt-3 font-display text-3xl font-semibold tracking-tight">{value}</p>
+          <p className="text-xs text-muted-foreground">{hint}</p>
+        </CardContent>
+      </Card>
+    </TiltCard>
   );
+
 }
