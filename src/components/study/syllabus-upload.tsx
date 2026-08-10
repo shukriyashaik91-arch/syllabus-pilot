@@ -275,7 +275,7 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
                         <AccordionItem
                           key={draftKey}
                           value={draftKey}
-                          className="rounded-2xl border border-border px-3 mb-2"
+                          className="depth-card hover:depth-card-hover rise-in mb-2 rounded-2xl border border-border bg-card px-3"
                         >
                           <AccordionTrigger className="py-3 hover:no-underline">
                             <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2 pr-2 text-left">

@@ -83,7 +83,7 @@ function UnitCard({ unit }: { unit: StudyUnit }) {
   const hours = Math.round(unit.topics.reduce((h, t) => h + t.estimatedHours, 0) * 10) / 10;
 
   return (
-    <AccordionItem value={unit.key} className="rounded-2xl border border-border px-3">
+    <AccordionItem value={unit.key} className="depth-card hover:depth-card-hover rounded-2xl border border-border bg-card px-3">
       <AccordionTrigger className="py-3 hover:no-underline">
         <span className="flex min-w-0 flex-1 flex-col gap-1.5 pr-2 text-left">
           <span className="flex flex-wrap items-center gap-2">
