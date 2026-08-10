@@ -13,6 +13,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { Scene3D } from "@/components/three/scene-3d";
+
 import { supabase } from "@/integrations/supabase/client";
 import { extractPdfText, MAX_PDF_BYTES } from "@/lib/study/pdf";
 import { extractSyllabusWithAi, type AiSyllabus } from "@/lib/study/ai.functions";
@@ -206,9 +208,17 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
           busy && "pointer-events-none opacity-70",
         )}
       >
-        <span className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
-          {busy ? <Loader2 className="size-5 animate-spin" /> : <FileUp className="size-5" />}
-        </span>
+        <div className="relative grid size-28 place-items-center">
+          <Scene3D
+            variant={phase === "thinking" ? "loader" : "orb"}
+            active={phase === "reading" || phase === "uploading"}
+            className="absolute inset-0"
+          />
+          <span className="relative grid size-10 place-items-center rounded-2xl bg-primary/10 text-primary backdrop-blur-sm">
+            {busy ? <Loader2 className="size-5 animate-spin" /> : <FileUp className="size-5" />}
+          </span>
+        </div>
+
         <div>
           <p className="font-medium">
             {phase === "reading" && "Extracting text…"}
@@ -265,7 +275,7 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
                         <AccordionItem
                           key={draftKey}
                           value={draftKey}
-                          className="rounded-2xl border border-border px-3 mb-2"
+                          className="depth-card hover:depth-card-hover rise-in mb-2 rounded-2xl border border-border bg-card px-3"
                         >
                           <AccordionTrigger className="py-3 hover:no-underline">
                             <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2 pr-2 text-left">

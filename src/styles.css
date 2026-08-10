@@ -170,3 +170,88 @@
   );
   background-size: 22px 22px;
 }
+
+/* ---------------------------------------------------------------
+ * Depth, glass and micro-interaction layer (3D visual upgrade)
+ * --------------------------------------------------------------- */
+
+@utility tilt-surface {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  --tilt-lift: 0px;
+  transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y))
+    translateY(var(--tilt-lift));
+  transform-style: preserve-3d;
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms ease;
+  will-change: transform;
+}
+
+@utility depth-card {
+  box-shadow:
+    0 1px 2px color-mix(in oklab, var(--color-foreground) 6%, transparent),
+    0 12px 28px -18px color-mix(in oklab, var(--color-primary) 45%, transparent);
+  transition:
+    box-shadow 260ms ease,
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@utility depth-card-hover {
+  box-shadow:
+    0 2px 4px color-mix(in oklab, var(--color-foreground) 8%, transparent),
+    0 26px 48px -22px color-mix(in oklab, var(--color-primary) 55%, transparent);
+}
+
+@utility glass-panel {
+  background-color: color-mix(in oklab, var(--color-card) 72%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid color-mix(in oklab, var(--color-foreground) 8%, transparent);
+}
+
+@utility press {
+  transition: transform 120ms ease;
+}
+
+.press:active {
+  transform: scale(0.97);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility rise-in {
+  animation: rise-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@utility float-soft {
+  animation: float-soft 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

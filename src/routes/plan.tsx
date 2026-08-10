@@ -2,7 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarRange, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/study/app-shell";
+import { TiltCard } from "@/components/study/tilt-card";
+import { Scene3D } from "@/components/three/scene-3d";
 import { SessionCard } from "@/components/study/session-card";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStudyState } from "@/lib/study/storage";
@@ -83,18 +86,25 @@ function PlanPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl">Timetable</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {upcoming.length} upcoming blocks ·{" "}
-            {upcoming.reduce((sum, s) => sum + s.hours, 0)} hours planned
-          </p>
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6">
+        <Scene3D
+          variant="orb"
+          className="absolute -right-6 top-1/2 hidden h-48 w-64 -translate-y-1/2 opacity-70 md:block"
+        />
+        <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl">Timetable</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {upcoming.length} upcoming blocks ·{" "}
+              {upcoming.reduce((sum, s) => sum + s.hours, 0)} hours planned
+            </p>
+          </div>
+          <Button variant="outline" className="press glass-panel rounded-full" onClick={regenerate}>
+            <RefreshCw className="size-4" aria-hidden /> Regenerate
+          </Button>
         </div>
-        <Button variant="outline" className="rounded-full" onClick={regenerate}>
-          <RefreshCw className="size-4" aria-hidden /> Regenerate
-        </Button>
       </div>
+
 
       {upcoming.length === 0 ? (
         <Card className="mt-6 rounded-3xl">
@@ -110,39 +120,46 @@ function PlanPage() {
         </Card>
       ) : (
         <div className="mt-6 space-y-4">
-          {[...byDate.entries()].map(([date, sessions]) => (
-            <Card key={date} className="rounded-3xl">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-baseline gap-2 text-base">
-                  <span>
-                    {date === today
-                      ? "Today"
-                      : parseISODate(date).toLocaleDateString(undefined, {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "short",
-                        })}
-                  </span>
-                  <span className="text-xs font-normal text-muted-foreground">
-                    {sessions.reduce((sum, s) => sum + s.hours, 0)}h
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {sessions.map((s) => (
-                    <SessionCard
-                      key={s.id}
-                      session={s}
-                      subjects={state.subjects}
-                      onToggle={toggleSession}
-                    />
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+          {[...byDate.entries()].map(([date, sessions], dayIndex) => (
+            <TiltCard key={date} max={2} className="rise-in" >
+              <Card
+                className="depth-card hover:depth-card-hover rounded-3xl"
+                style={{ animationDelay: `${Math.min(dayIndex, 8) * 60}ms` }}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-baseline gap-2 text-base">
+                    <span>
+                      {date === today
+                        ? "Today"
+                        : parseISODate(date).toLocaleDateString(undefined, {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "short",
+                          })}
+                    </span>
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {sessions.reduce((sum, s) => sum + s.hours, 0)}h
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {sessions.map((s, i) => (
+                      <div key={s.id} className="rise-in" style={{ animationDelay: `${i * 50}ms` }}>
+                        <SessionCard
+                          session={s}
+                          subjects={state.subjects}
+                          onToggle={toggleSession}
+                        />
+                      </div>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </TiltCard>
           ))}
         </div>
+
       )}
     </AppShell>
   );

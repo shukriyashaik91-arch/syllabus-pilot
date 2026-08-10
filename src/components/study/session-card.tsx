@@ -23,10 +23,11 @@ export function SessionCard({ session, subjects, onToggle }: SessionCardProps) {
   return (
     <li
       className={cn(
-        "flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition-opacity sm:p-4",
+        "depth-card hover:depth-card-hover flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition-all hover:-translate-y-0.5 sm:p-4",
         session.done && "opacity-60",
       )}
     >
+
       <span
         aria-hidden
         className="h-10 w-1.5 shrink-0 rounded-full"
@@ -53,8 +54,9 @@ export function SessionCard({ session, subjects, onToggle }: SessionCardProps) {
         size="sm"
         variant={session.done ? "secondary" : "default"}
         onClick={() => onToggle(session.id)}
-        className="rounded-full"
+        className="press rounded-full"
       >
+
         <Check className="size-4" aria-hidden />
         <span className="hidden sm:inline">{session.done ? "Done" : "Mark done"}</span>
       </Button>

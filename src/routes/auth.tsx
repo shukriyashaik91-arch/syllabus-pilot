@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/study/app-shell";
+import { Scene3D } from "@/components/three/scene-3d";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -90,7 +92,13 @@ function AuthPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-md">
+      <div className="relative">
+        <Scene3D
+          variant="particles"
+          className="absolute inset-x-0 -top-10 h-[26rem] opacity-60 [mask-image:radial-gradient(circle_at_50%_40%,black,transparent_70%)]"
+        />
+        <div className="relative z-10 mx-auto max-w-md">
+
         <h1 className="text-3xl sm:text-4xl">Save your plan</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Sign in and your syllabus, exams and timetable are stored in your account — closing the
@@ -155,7 +163,9 @@ function AuthPage() {
             </Tabs>
           </CardContent>
         </Card>
+        </div>
       </div>
+
     </AppShell>
   );
 }

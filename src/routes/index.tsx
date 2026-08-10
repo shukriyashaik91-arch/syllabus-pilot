@@ -2,8 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarClock, Flame, GraduationCap, Sparkles, Target } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/study/app-shell";
+import { Scene3D } from "@/components/three/scene-3d";
+import { TiltCard } from "@/components/study/tilt-card";
+import { CountUp } from "@/components/study/count-up";
 import { ProgressRing } from "@/components/study/progress-ring";
 import { SessionCard } from "@/components/study/session-card";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -106,38 +110,55 @@ function Dashboard() {
   if (state.topics.length === 0) {
     return (
       <AppShell>
-        <section className="paper rounded-3xl border border-border bg-card p-8 text-center sm:p-14">
-          <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-            <Sparkles className="size-3.5" aria-hidden /> Adaptive study planning
-          </span>
-          <h1 className="mx-auto mt-5 max-w-2xl text-balance text-4xl sm:text-5xl">
-            Turn your syllabus into a plan you can actually follow
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Paste your syllabus, add your exam dates and free hours. Studyloop
-            prioritises weak and heavy topics, schedules spaced revision, and keeps
-            two days before each exam free for mock tests.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button asChild size="lg" className="rounded-full">
-              <Link to="/setup">Add my syllabus</Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="rounded-full"
-              onClick={() => {
-                update(withSample);
-                toast.success("Sample syllabus loaded — generate your plan in Setup.");
-              }}
+        <section className="paper relative overflow-hidden rounded-3xl border border-border bg-card p-8 sm:p-14">
+          <Scene3D
+            variant="hero"
+            className="pointer-events-none absolute inset-0 h-full w-full scale-125 opacity-25 blur-[1px] [mask-image:radial-gradient(circle_at_50%_50%,transparent_28%,black_70%)]"
+          />
+
+          <div className="relative z-10 text-center">
+            <span className="rise-in inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
+              <Sparkles className="size-3.5" aria-hidden /> Adaptive study planning
+            </span>
+            <h1
+              className="rise-in mx-auto mt-5 max-w-2xl text-balance text-4xl sm:text-5xl"
+              style={{ animationDelay: "80ms" }}
             >
-              Try sample data
-            </Button>
+              Turn your syllabus into a plan you can actually follow
+            </h1>
+            <p
+              className="rise-in mx-auto mt-4 max-w-xl text-muted-foreground"
+              style={{ animationDelay: "160ms" }}
+            >
+              Paste your syllabus, add your exam dates and free hours. Studyloop
+              prioritises weak and heavy topics, schedules spaced revision, and keeps
+              two days before each exam free for mock tests.
+            </p>
+            <div
+              className="rise-in mt-8 flex flex-wrap justify-center gap-3"
+              style={{ animationDelay: "240ms" }}
+            >
+              <Button asChild size="lg" className="press rounded-full">
+                <Link to="/setup">Add my syllabus</Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="press rounded-full glass-panel"
+                onClick={() => {
+                  update(withSample);
+                  toast.success("Sample syllabus loaded — generate your plan in Setup.");
+                }}
+              >
+                Try sample data
+              </Button>
+            </div>
           </div>
         </section>
       </AppShell>
     );
   }
+
 
   return (
     <AppShell>
@@ -146,68 +167,100 @@ function Dashboard() {
           <h1 className="text-3xl sm:text-4xl">Today&rsquo;s plan</h1>
           <p className="mt-1 text-sm text-muted-foreground">{quote}</p>
         </div>
-        <Button asChild variant="outline" className="rounded-full">
+        <Button asChild variant="outline" className="press rounded-full">
           <Link to="/plan">View full timetable</Link>
         </Button>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <Card className="rounded-3xl lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base">Scheduled blocks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {todaySessions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Nothing scheduled today.{" "}
-                <Link to="/setup" className="text-accent underline underline-offset-4">
-                  Generate a plan
-                </Link>{" "}
-                to fill your week.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {todaySessions.map((s) => (
-                  <SessionCard
-                    key={s.id}
-                    session={s}
-                    subjects={state.subjects}
-                    onToggle={toggleSession}
-                  />
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-3xl">
-          <CardHeader>
-            <CardTitle className="text-base">Syllabus progress</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <ProgressRing
-              value={progress}
-              label="covered"
-              caption={`${doneTopics} of ${state.topics.length} topics completed`}
-            />
-            <div className="grid w-full grid-cols-2 gap-3 text-center">
-              <Stat icon={<Flame className="size-4" />} label="Day streak" value={String(streak)} />
-              <Stat
-                icon={<Target className="size-4" />}
-                label="Hours this week"
-                value={`${weekDoneHours}/${weekHours}`}
-              />
-            </div>
-            <div className="w-full">
-              <Progress value={weekHours ? (weekDoneHours / weekHours) * 100 : 0} />
-              <p className="mt-2 text-xs text-muted-foreground">Weekly goal progress</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          icon={<Target className="size-4" />}
+          label="Study progress"
+          value={progress}
+          decimals={0}
+          suffix="%"
+          caption={`${doneTopics}/${state.topics.length} topics`}
+          delay={0}
+        />
+        <MetricCard
+          icon={<CalendarClock className="size-4" />}
+          label="Upcoming exams"
+          value={state.exams.filter((e) => e.date >= today).length}
+          caption={upcomingExams[0] ? `Next: ${upcomingExams[0].name}` : "None scheduled"}
+          delay={70}
+        />
+        <MetricCard
+          icon={<Flame className="size-4" />}
+          label="Study streak"
+          value={streak}
+          caption={streak > 0 ? "days in a row" : "start today"}
+          delay={140}
+        />
+        <MetricCard
+          icon={<GraduationCap className="size-4" />}
+          label="Completed topics"
+          value={doneTopics}
+          caption={`${weekDoneHours}/${weekHours}h done this week`}
+          delay={210}
+        />
       </div>
 
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <TiltCard className="lg:col-span-2" max={3}>
+          <Card className="depth-card hover:depth-card-hover h-full rounded-3xl">
+            <CardHeader>
+              <CardTitle className="text-base">Scheduled blocks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {todaySessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nothing scheduled today.{" "}
+                  <Link to="/setup" className="text-accent underline underline-offset-4">
+                    Generate a plan
+                  </Link>{" "}
+                  to fill your week.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {todaySessions.map((s, i) => (
+                    <div key={s.id} className="rise-in" style={{ animationDelay: `${i * 60}ms` }}>
+                      <SessionCard
+                        session={s}
+                        subjects={state.subjects}
+                        onToggle={toggleSession}
+                      />
+                    </div>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </TiltCard>
+
+        <TiltCard max={4}>
+          <Card className="depth-card hover:depth-card-hover h-full rounded-3xl">
+            <CardHeader>
+              <CardTitle className="text-base">Syllabus progress</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-4">
+              <ProgressRing
+                value={progress}
+                label="covered"
+                caption={`${doneTopics} of ${state.topics.length} topics completed`}
+              />
+              <div className="w-full">
+                <Progress value={weekHours ? (weekDoneHours / weekHours) * 100 : 0} />
+                <p className="mt-2 text-xs text-muted-foreground">Weekly goal progress</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TiltCard>
+      </div>
+
+
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <Card className="rounded-3xl">
+        <Card className="depth-card hover:depth-card-hover rounded-3xl">
+
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <CalendarClock className="size-4 text-accent" aria-hidden /> Upcoming exams
@@ -242,7 +295,7 @@ function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl">
+        <Card className="depth-card hover:depth-card-hover rounded-3xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <GraduationCap className="size-4 text-accent" aria-hidden /> Unit progress
@@ -276,14 +329,39 @@ function Dashboard() {
   );
 }
 
-function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+/** Depth + tilt metric tile with animated statistics. */
+function MetricCard({
+  icon,
+  label,
+  value,
+  caption,
+  decimals = 0,
+  suffix = "",
+  delay = 0,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  caption: string;
+  decimals?: number;
+  suffix?: string;
+  delay?: number;
+}) {
   return (
-    <div className="rounded-2xl bg-secondary/60 px-3 py-3">
-      <span className="mx-auto flex size-7 items-center justify-center rounded-full bg-card text-accent">
-        {icon}
-      </span>
-      <p className="mt-1.5 font-display text-xl">{value}</p>
-      <p className="text-[11px] text-muted-foreground">{label}</p>
-    </div>
+    <TiltCard className="rise-in" max={8}>
+      <div
+        className="depth-card hover:depth-card-hover glass-panel rounded-3xl p-4"
+        style={{ animationDelay: `${delay}ms` }}
+      >
+        <span className="flex size-8 items-center justify-center rounded-full bg-secondary text-accent">
+          {icon}
+        </span>
+        <p className="mt-3 font-display text-3xl">
+          <CountUp value={value} decimals={decimals} suffix={suffix} />
+        </p>
+        <p className="text-sm font-medium">{label}</p>
+        <p className="mt-0.5 truncate text-xs text-muted-foreground">{caption}</p>
+      </div>
+    </TiltCard>
   );
 }
