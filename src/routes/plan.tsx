@@ -86,18 +86,25 @@ function PlanPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl">Timetable</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {upcoming.length} upcoming blocks ·{" "}
-            {upcoming.reduce((sum, s) => sum + s.hours, 0)} hours planned
-          </p>
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6">
+        <Scene3D
+          variant="orb"
+          className="absolute -right-6 top-1/2 hidden h-48 w-64 -translate-y-1/2 opacity-70 md:block"
+        />
+        <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl">Timetable</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {upcoming.length} upcoming blocks ·{" "}
+              {upcoming.reduce((sum, s) => sum + s.hours, 0)} hours planned
+            </p>
+          </div>
+          <Button variant="outline" className="press glass-panel rounded-full" onClick={regenerate}>
+            <RefreshCw className="size-4" aria-hidden /> Regenerate
+          </Button>
         </div>
-        <Button variant="outline" className="rounded-full" onClick={regenerate}>
-          <RefreshCw className="size-4" aria-hidden /> Regenerate
-        </Button>
       </div>
+
 
       {upcoming.length === 0 ? (
         <Card className="mt-6 rounded-3xl">
