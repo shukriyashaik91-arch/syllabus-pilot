@@ -163,6 +163,7 @@ export const emptyState: StudyState = {
   coachNotes: [],
   planGeneratedAt: null,
   activeDays: [],
+  planSelection: null,
 };
 
 export const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
