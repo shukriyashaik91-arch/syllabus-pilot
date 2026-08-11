@@ -33,6 +33,8 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [preview, setPreview] = useState<AiSyllabus | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  /** Optional subject name typed by the student for this specific PDF. */
+  const [subjectName, setSubjectName] = useState("");
 
   const busy = phase !== "idle";
 
@@ -78,7 +80,19 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
           examDate: [...state.exams].sort((a, b) => a.date.localeCompare(b.date))[0]?.date ?? null,
         },
       });
-      setPreview(result);
+      // One PDF = one subject when the student named it: keep every unit of
+      // this file under that subject, in the order the AI returned them.
+      const named = subjectName.trim();
+      setPreview(
+        named
+          ? {
+              ...result,
+              subjects: [
+                { name: named, units: result.subjects.flatMap((s) => s.units) },
+              ],
+            }
+          : result,
+      );
       const units = result.subjects.reduce((n, s) => n + s.units.length, 0);
       toast.success(`Read ${pages} page${pages === 1 ? "" : "s"} — found ${units} units.`);
     } catch (error) {
@@ -161,6 +175,7 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
     }));
     setPreview(null);
     setFileName(null);
+    setSubjectName("");
     toast.success(`Added ${topics.length} topics to your syllabus.`);
     onApplied?.();
   };
@@ -183,6 +198,21 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
 
   return (
     <div className="space-y-4">
+      <div className="space-y-1.5">
+        <Input
+          value={subjectName}
+          onChange={(e) => setSubjectName(e.target.value.slice(0, 80))}
+          placeholder="Subject name (e.g. Mathematics)"
+          aria-label="Subject name for this PDF"
+          disabled={busy}
+          className="rounded-full"
+        />
+        <p className="text-xs text-muted-foreground">
+          Add one subject at a time — name it, upload its PDF, then repeat for the next subject.
+          Existing subjects are kept.
+        </p>
+      </div>
+
       <div
         role="button"
         tabIndex={0}
