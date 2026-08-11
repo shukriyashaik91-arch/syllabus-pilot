@@ -1,5 +1,5 @@
 import { uid } from "./storage";
-import { groupUnits } from "./units";
+import { groupUnits, unitKeyOf } from "./units";
 
 import type {
   Availability,
@@ -91,6 +91,10 @@ function capacityFor(date: Date, availability: Availability): number {
 export interface PlanOptions {
   /** How many days ahead to plan when there is no exam to anchor to. */
   horizonDays?: number;
+  /**
+   * Unit keys the student picked. `null`/omitted plans the whole syllabus.
+   */
+  unitKeys?: string[] | null;
 }
 
 /** A single schedulable piece of work inside a unit. */
@@ -134,7 +138,10 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
   const start = todayISO();
   const horizon = options.horizonDays ?? 21;
 
-  const pending = topics.filter((t) => t.status !== "done");
+  const selection = options.unitKeys ? new Set(options.unitKeys) : null;
+  const pending = topics.filter(
+    (t) => t.status !== "done" && (!selection || selection.has(unitKeyOf(t))),
+  );
   if (pending.length === 0 || subjects.length === 0) return { sessions: [], milestones: [] };
 
   const examBySubject = new Map<string, Exam>();
@@ -206,7 +213,9 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
   const sessions: PlanSession[] = [];
   const examLockedDays = new Map<string, Exam>();
 
+  const plannedSubjects = new Set(queues.map((q) => q.subjectId));
   for (const exam of exams) {
+    if (!plannedSubjects.has(exam.subjectId)) continue;
     for (let offset = 1; offset <= 2; offset++) {
       const d = toISODate(new Date(parseISODate(exam.date).getTime() - offset * DAY_MS));
       if (d >= start) examLockedDays.set(d, exam);
