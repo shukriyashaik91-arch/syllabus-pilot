@@ -33,6 +33,8 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [preview, setPreview] = useState<AiSyllabus | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  /** Optional subject name typed by the student for this specific PDF. */
+  const [subjectName, setSubjectName] = useState("");
 
   const busy = phase !== "idle";
 
