@@ -80,7 +80,19 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
           examDate: [...state.exams].sort((a, b) => a.date.localeCompare(b.date))[0]?.date ?? null,
         },
       });
-      setPreview(result);
+      // One PDF = one subject when the student named it: keep every unit of
+      // this file under that subject, in the order the AI returned them.
+      const named = subjectName.trim();
+      setPreview(
+        named
+          ? {
+              ...result,
+              subjects: [
+                { name: named, units: result.subjects.flatMap((s) => s.units) },
+              ],
+            }
+          : result,
+      );
       const units = result.subjects.reduce((n, s) => n + s.units.length, 0);
       toast.success(`Read ${pages} page${pages === 1 ? "" : "s"} — found ${units} units.`);
     } catch (error) {
