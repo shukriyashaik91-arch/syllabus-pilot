@@ -175,6 +175,7 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
     }));
     setPreview(null);
     setFileName(null);
+    setSubjectName("");
     toast.success(`Added ${topics.length} topics to your syllabus.`);
     onApplied?.();
   };
