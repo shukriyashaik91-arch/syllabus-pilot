@@ -66,7 +66,16 @@ function PlanPage() {
     });
 
   const regenerate = () => {
-    const { sessions, milestones } = generatePlan(state);
+    const selection = state.planSelection;
+    if (selection && selection.length === 0) {
+      toast.error("Please select at least one subject or unit to generate your timetable.");
+      return;
+    }
+    const { sessions, milestones } = generatePlan(state, { unitKeys: selection });
+    if (sessions.length === 0) {
+      toast.error("Please select at least one subject or unit to generate your timetable.");
+      return;
+    }
     update((prev) => ({
       ...prev,
       plan: sessions,
