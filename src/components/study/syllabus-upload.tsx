@@ -198,6 +198,21 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
 
   return (
     <div className="space-y-4">
+      <div className="space-y-1.5">
+        <Input
+          value={subjectName}
+          onChange={(e) => setSubjectName(e.target.value.slice(0, 80))}
+          placeholder="Subject name (e.g. Mathematics)"
+          aria-label="Subject name for this PDF"
+          disabled={busy}
+          className="rounded-full"
+        />
+        <p className="text-xs text-muted-foreground">
+          Add one subject at a time — name it, upload its PDF, then repeat for the next subject.
+          Existing subjects are kept.
+        </p>
+      </div>
+
       <div
         role="button"
         tabIndex={0}
