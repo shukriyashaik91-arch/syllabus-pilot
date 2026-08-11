@@ -37,6 +37,9 @@ export function SessionCard({ session, subjects, onToggle }: SessionCardProps) {
         <p className={cn("truncate font-medium", session.done && "line-through")}>
           {session.title}
         </p>
+        {session.unitLabel ? (
+          <p className="truncate text-xs text-muted-foreground">{session.unitLabel}</p>
+        ) : null}
         <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
           <span className="truncate">{subjectName(subjects, session.subjectId)}</span>
           <span aria-hidden>·</span>

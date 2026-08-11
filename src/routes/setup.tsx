@@ -23,6 +23,7 @@ import { uid, useStudyState } from "@/lib/study/storage";
 import { parseSyllabus } from "@/lib/study/parse";
 import { SyllabusUpload } from "@/components/study/syllabus-upload";
 import { UnitManager } from "@/components/study/unit-manager";
+import { PlanSelector } from "@/components/study/plan-selector";
 import { generatePlan, todayISO } from "@/lib/study/planner";
 import { withSample } from "@/lib/study/sample";
 import type { Difficulty, Exam } from "@/lib/study/types";
@@ -86,7 +87,16 @@ function SetupPage() {
       toast.error("Add your syllabus first.");
       return;
     }
-    const { sessions, milestones } = generatePlan(state);
+    const selection = state.planSelection;
+    if (selection && selection.length === 0) {
+      toast.error("Please select at least one subject or unit to generate your timetable.");
+      return;
+    }
+    const { sessions, milestones } = generatePlan(state, { unitKeys: selection });
+    if (sessions.length === 0) {
+      toast.error("Please select at least one subject or unit to generate your timetable.");
+      return;
+    }
     update((prev) => ({
       ...prev,
       plan: sessions,
@@ -125,6 +135,10 @@ function SetupPage() {
             <Wand2 className="size-4" aria-hidden /> Generate timetable
           </Button>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <PlanSelector />
       </div>
 
       <Tabs defaultValue="syllabus" className="mt-6">
