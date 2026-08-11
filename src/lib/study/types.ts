@@ -123,6 +123,11 @@ export interface StudyState {
   planGeneratedAt: string | null;
   /** ISO dates on which at least one session was completed. */
   activeDays: string[];
+  /**
+   * Unit keys (`${subjectId}|${unit}`) the timetable should be built from.
+   * `null` means "everything in the syllabus".
+   */
+  planSelection: string[] | null;
 }
 
 export const defaultAvailability: Availability = {
