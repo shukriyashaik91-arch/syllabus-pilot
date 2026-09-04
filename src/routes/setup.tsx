@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { uid, useStudyState } from "@/lib/study/storage";
-import { parseSyllabus } from "@/lib/study/parse";
+
 import { SyllabusUpload } from "@/components/study/syllabus-upload";
 import { UnitManager } from "@/components/study/unit-manager";
 import { PlanSelector } from "@/components/study/plan-selector";
@@ -48,38 +48,11 @@ export const Route = createFileRoute("/setup")({
   component: SetupPage,
 });
 
-const EXAMPLE = `Subject: Data Structures
-Unit 1: Linear structures
-- Arrays and strings
-- Linked lists
-Unit 2: Trees and graphs
-- Binary search trees
-- Graph traversal algorithms`;
-
 function SetupPage() {
   const { state, update, reset, hydrated } = useStudyState();
   const navigate = useNavigate();
-  const [syllabusText, setSyllabusText] = useState("");
 
-  const importSyllabus = () => {
-    const text = syllabusText.trim();
-    if (!text) {
-      toast.error("Paste some syllabus text first.");
-      return;
-    }
-    const { subjects, topics } = parseSyllabus(text, state.subjects);
-    if (topics.length === 0) {
-      toast.error("Couldn't find any topics in that text.");
-      return;
-    }
-    update((prev) => ({
-      ...prev,
-      subjects: [...prev.subjects, ...subjects],
-      topics: [...prev.topics, ...topics],
-    }));
-    setSyllabusText("");
-    toast.success(`Imported ${topics.length} topics across ${subjects.length || "existing"} subjects.`);
-  };
+
 
 
   const buildPlan = () => {
@@ -124,7 +97,17 @@ function SetupPage() {
             Syllabus, exams and availability — then generate the timetable.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="ghost"
+            className="rounded-full"
+            onClick={() => {
+              update(withSample);
+              toast.success("Sample syllabus, exams and topics loaded.");
+            }}
+          >
+            Load sample data
+          </Button>
           <Button variant="ghost" className="rounded-full" onClick={() => {
             reset();
             toast.success("Everything cleared.");
@@ -160,49 +143,6 @@ function SetupPage() {
               <SyllabusUpload />
             </CardContent>
           </Card>
-          <Card className="rounded-3xl">
-
-            <CardHeader>
-              <CardTitle className="text-base">Paste your syllabus</CardTitle>
-              <CardDescription>
-                Use lines like <code>Subject: Physics</code>, <code>Unit 2: Optics</code> and{" "}
-                <code>- Lenses</code>. Difficulty and time estimates are inferred automatically.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Textarea
-                value={syllabusText}
-                onChange={(e) => setSyllabusText(e.target.value.slice(0, 20000))}
-                placeholder={EXAMPLE}
-                rows={10}
-                className="rounded-2xl font-mono text-xs"
-                aria-label="Syllabus text"
-              />
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={importSyllabus} className="rounded-full">
-                  <Plus className="size-4" aria-hidden /> Import topics
-                </Button>
-                <Button
-                  variant="outline"
-                  className="rounded-full"
-                  onClick={() => setSyllabusText(EXAMPLE)}
-                >
-                  Insert example
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="rounded-full"
-                  onClick={() => {
-                    update(withSample);
-                    toast.success("Sample syllabus, exams and topics loaded.");
-                  }}
-                >
-                  Load sample data
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
           <UnitsCard />
         </TabsContent>
 

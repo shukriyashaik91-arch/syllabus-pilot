@@ -18,6 +18,8 @@ const InputSchema = z.object({
   daysPerWeek: z.number().min(1).max(7),
   level: z.enum(["easy", "medium", "hard"]),
   examDate: z.string().nullable(),
+  /** Optional second-pass hint listing unit headings found in the raw text. */
+  hint: z.string().max(4000).optional(),
 });
 
 export interface AiTopic {
@@ -104,6 +106,7 @@ export const extractSyllabusWithAi = createServerFn({ method: "POST" })
       "- unitTitle: the unit's title only, without the number prefix. If none is printed, write a short 3-6 word title summarising the unit.",
       "- Keep units in exactly the order they appear in the document. Never merge or reorder units.",
       "- If the document has no unit headings at all, create sensible sequential units ('Unit 1', 'Unit 2', ...) from the major sections.",
+      "- CRITICAL: read the document to the very END. Never stop after the first unit. Every unit heading present in the text must appear in the output, even if the document repeats or spans many pages.",
       "",
       "TOPICS",
       "- Under each unit list ONLY the meaningful study topics that belong to that unit.",
@@ -121,6 +124,8 @@ export const extractSyllabusWithAi = createServerFn({ method: "POST" })
       `STUDENT: studies about ${data.hoursPerDay} hours a day, ${data.daysPerWeek} days a week, and rates themselves as ${data.level} on this material.`,
       data.examDate ? `Their exam is on ${data.examDate}.` : "No exam date was given.",
       "- notes: 2 to 4 short, specific pieces of strategy advice for this syllabus (max 140 characters each).",
+      "",
+      data.hint ? `\nHEADINGS DETECTED IN THE RAW TEXT (every one of these must appear as a unit):\n${data.hint}` : "",
       "",
       "SYLLABUS:",
       data.text.slice(0, 60000),
