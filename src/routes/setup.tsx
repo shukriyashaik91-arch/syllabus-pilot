@@ -160,48 +160,8 @@ function SetupPage() {
               <SyllabusUpload />
             </CardContent>
           </Card>
-          <Card className="rounded-3xl">
 
-            <CardHeader>
-              <CardTitle className="text-base">Paste your syllabus</CardTitle>
-              <CardDescription>
-                Use lines like <code>Subject: Physics</code>, <code>Unit 2: Optics</code> and{" "}
-                <code>- Lenses</code>. Difficulty and time estimates are inferred automatically.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Textarea
-                value={syllabusText}
-                onChange={(e) => setSyllabusText(e.target.value.slice(0, 20000))}
-                placeholder={EXAMPLE}
-                rows={10}
-                className="rounded-2xl font-mono text-xs"
-                aria-label="Syllabus text"
-              />
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={importSyllabus} className="rounded-full">
-                  <Plus className="size-4" aria-hidden /> Import topics
-                </Button>
-                <Button
-                  variant="outline"
-                  className="rounded-full"
-                  onClick={() => setSyllabusText(EXAMPLE)}
-                >
-                  Insert example
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="rounded-full"
-                  onClick={() => {
-                    update(withSample);
-                    toast.success("Sample syllabus, exams and topics loaded.");
-                  }}
-                >
-                  Load sample data
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+
 
           <UnitsCard />
         </TabsContent>
