@@ -18,6 +18,8 @@ const InputSchema = z.object({
   daysPerWeek: z.number().min(1).max(7),
   level: z.enum(["easy", "medium", "hard"]),
   examDate: z.string().nullable(),
+  /** Optional second-pass hint listing unit headings found in the raw text. */
+  hint: z.string().max(4000).optional(),
 });
 
 export interface AiTopic {
