@@ -106,6 +106,7 @@ export const extractSyllabusWithAi = createServerFn({ method: "POST" })
       "- unitTitle: the unit's title only, without the number prefix. If none is printed, write a short 3-6 word title summarising the unit.",
       "- Keep units in exactly the order they appear in the document. Never merge or reorder units.",
       "- If the document has no unit headings at all, create sensible sequential units ('Unit 1', 'Unit 2', ...) from the major sections.",
+      "- CRITICAL: read the document to the very END. Never stop after the first unit. Every unit heading present in the text must appear in the output, even if the document repeats or spans many pages.",
       "",
       "TOPICS",
       "- Under each unit list ONLY the meaningful study topics that belong to that unit.",
