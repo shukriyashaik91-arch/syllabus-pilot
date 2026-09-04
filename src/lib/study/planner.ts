@@ -95,6 +95,11 @@ export interface PlanOptions {
    * Unit keys the student picked. `null`/omitted plans the whole syllabus.
    */
   unitKeys?: string[] | null;
+  /**
+   * Topic ids the student picked on the review page. `null`/omitted plans
+   * every topic of the selected units.
+   */
+  topicIds?: string[] | null;
 }
 
 /** A single schedulable piece of work inside a unit. */
@@ -139,8 +144,12 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
   const horizon = options.horizonDays ?? 21;
 
   const selection = options.unitKeys ? new Set(options.unitKeys) : null;
+  const picked = options.topicIds ? new Set(options.topicIds) : null;
   const pending = topics.filter(
-    (t) => t.status !== "done" && (!selection || selection.has(unitKeyOf(t))),
+    (t) =>
+      t.status !== "done" &&
+      (!selection || selection.has(unitKeyOf(t))) &&
+      (!picked || picked.has(t.id)),
   );
   if (pending.length === 0 || subjects.length === 0) return { sessions: [], milestones: [] };
 
@@ -209,6 +218,11 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
       ),
     });
   }
+
+  const sessionCap = Math.min(
+    4,
+    Math.max(0.5, Math.round(((availability.sessionMinutes ?? 60) / 60) * 2) / 2),
+  );
 
   const sessions: PlanSession[] = [];
   const examLockedDays = new Map<string, Exam>();
@@ -283,7 +297,7 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
       const queue = eligible.reduce((best, q) => (q.score > best.score ? q : best), eligible[0]!);
       const item = queue.items[queue.cursor]!;
 
-      const chunk = Math.min(item.remaining, capacity, 2);
+      const chunk = Math.min(item.remaining, capacity, sessionCap);
       const block = session(iso, item.subjectId, item.topic?.id ?? null, item.title, chunk, item.kind);
       block.unitKey = item.unitKey;
       block.unitLabel = item.unitLabel;

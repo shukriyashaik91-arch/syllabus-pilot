@@ -53,6 +53,8 @@ export interface Availability {
   weekendHoursPerDay: number;
   preferredTime: "morning" | "afternoon" | "evening" | "night";
   breakMinutes: number;
+  /** Preferred length of a single study block, in minutes. */
+  sessionMinutes?: number;
   /** Weekday indices (0 = Sunday) the student is willing to study on. */
   studyDays: number[];
   intensity: Intensity;
@@ -128,6 +130,11 @@ export interface StudyState {
    * `null` means "everything in the syllabus".
    */
   planSelection: string[] | null;
+  /**
+   * Topic ids the student ticked on the syllabus review page.
+   * `null` means "everything in the syllabus".
+   */
+  topicSelection: string[] | null;
 }
 
 export const defaultAvailability: Availability = {
@@ -135,6 +142,7 @@ export const defaultAvailability: Availability = {
   weekendHoursPerDay: 5,
   preferredTime: "evening",
   breakMinutes: 10,
+  sessionMinutes: 60,
   studyDays: [0, 1, 2, 3, 4, 5, 6],
   intensity: "balanced",
   weakSubjectIds: [],
@@ -164,6 +172,7 @@ export const emptyState: StudyState = {
   planGeneratedAt: null,
   activeDays: [],
   planSelection: null,
+  topicSelection: null,
 };
 
 export const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
