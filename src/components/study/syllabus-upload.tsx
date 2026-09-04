@@ -238,6 +238,9 @@ export function SyllabusUpload({ onApplied }: { onApplied?: () => void }) {
       subjects: [...prev.subjects, ...subjects],
       topics: [...prev.topics, ...topics],
       coachNotes: preview.notes.length ? preview.notes : prev.coachNotes,
+      // Fresh syllabus content starts fully selected on the review page.
+      topicSelection: null,
+      planSelection: null,
     }));
     setPreview(null);
     setFileName(null);

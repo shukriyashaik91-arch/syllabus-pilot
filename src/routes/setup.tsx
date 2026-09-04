@@ -35,7 +35,7 @@ export const Route = createFileRoute("/setup")({
       {
         name: "description",
         content:
-          "Paste or type your syllabus, add exam dates with priority and weightage, then set the hours you can realistically study.",
+          "Upload your syllabus PDF, review the detected units and topics, then pick what goes into your timetable.",
       },
       { property: "og:title", content: "Set up your syllabus, exams & hours — Studyloop" },
       {
