@@ -125,6 +125,8 @@ export const extractSyllabusWithAi = createServerFn({ method: "POST" })
       data.examDate ? `Their exam is on ${data.examDate}.` : "No exam date was given.",
       "- notes: 2 to 4 short, specific pieces of strategy advice for this syllabus (max 140 characters each).",
       "",
+      data.hint ? `\nHEADINGS DETECTED IN THE RAW TEXT (every one of these must appear as a unit):\n${data.hint}` : "",
+      "",
       "SYLLABUS:",
       data.text.slice(0, 60000),
     ].join("\n");
