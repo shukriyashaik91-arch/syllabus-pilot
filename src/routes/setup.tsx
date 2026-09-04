@@ -48,38 +48,11 @@ export const Route = createFileRoute("/setup")({
   component: SetupPage,
 });
 
-const EXAMPLE = `Subject: Data Structures
-Unit 1: Linear structures
-- Arrays and strings
-- Linked lists
-Unit 2: Trees and graphs
-- Binary search trees
-- Graph traversal algorithms`;
-
 function SetupPage() {
   const { state, update, reset, hydrated } = useStudyState();
   const navigate = useNavigate();
-  const [syllabusText, setSyllabusText] = useState("");
 
-  const importSyllabus = () => {
-    const text = syllabusText.trim();
-    if (!text) {
-      toast.error("Paste some syllabus text first.");
-      return;
-    }
-    const { subjects, topics } = parseSyllabus(text, state.subjects);
-    if (topics.length === 0) {
-      toast.error("Couldn't find any topics in that text.");
-      return;
-    }
-    update((prev) => ({
-      ...prev,
-      subjects: [...prev.subjects, ...subjects],
-      topics: [...prev.topics, ...topics],
-    }));
-    setSyllabusText("");
-    toast.success(`Imported ${topics.length} topics across ${subjects.length || "existing"} subjects.`);
-  };
+
 
 
   const buildPlan = () => {
