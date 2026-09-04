@@ -143,9 +143,6 @@ function SetupPage() {
               <SyllabusUpload />
             </CardContent>
           </Card>
-
-
-
           <UnitsCard />
         </TabsContent>
 
