@@ -124,7 +124,17 @@ function SetupPage() {
             Syllabus, exams and availability — then generate the timetable.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="ghost"
+            className="rounded-full"
+            onClick={() => {
+              update(withSample);
+              toast.success("Sample syllabus, exams and topics loaded.");
+            }}
+          >
+            Load sample data
+          </Button>
           <Button variant="ghost" className="rounded-full" onClick={() => {
             reset();
             toast.success("Everything cleared.");
