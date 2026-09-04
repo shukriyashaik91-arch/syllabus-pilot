@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Plus, Trash2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/study/app-shell";
+import { StepNav } from "@/components/study/step-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,8 +24,7 @@ import { uid, useStudyState } from "@/lib/study/storage";
 
 import { SyllabusUpload } from "@/components/study/syllabus-upload";
 import { UnitManager } from "@/components/study/unit-manager";
-import { PlanSelector } from "@/components/study/plan-selector";
-import { generatePlan, todayISO } from "@/lib/study/planner";
+import { todayISO } from "@/lib/study/planner";
 import { withSample } from "@/lib/study/sample";
 import type { Difficulty, Exam } from "@/lib/study/types";
 
@@ -55,29 +55,12 @@ function SetupPage() {
 
 
 
-  const buildPlan = () => {
+  const goToReview = () => {
     if (state.topics.length === 0) {
       toast.error("Add your syllabus first.");
       return;
     }
-    const selection = state.planSelection;
-    if (selection && selection.length === 0) {
-      toast.error("Please select at least one subject or unit to generate your timetable.");
-      return;
-    }
-    const { sessions, milestones } = generatePlan(state, { unitKeys: selection });
-    if (sessions.length === 0) {
-      toast.error("Please select at least one subject or unit to generate your timetable.");
-      return;
-    }
-    update((prev) => ({
-      ...prev,
-      plan: sessions,
-      milestones,
-      planGeneratedAt: new Date().toISOString(),
-    }));
-    toast.success(`Timetable ready — ${sessions.length} sessions scheduled.`);
-    navigate({ to: "/plan" });
+    navigate({ to: "/syllabus-review" });
   };
 
   if (!hydrated) {
@@ -92,7 +75,8 @@ function SetupPage() {
     <AppShell>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl">Set up your plan</h1>
+          <StepNav current={1} />
+          <h1 className="mt-4 text-3xl sm:text-4xl">Set up your plan</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Syllabus, exams and availability — then generate the timetable.
           </p>
@@ -114,14 +98,10 @@ function SetupPage() {
           }}>
             Clear all
           </Button>
-          <Button className="rounded-full" onClick={buildPlan}>
-            <Wand2 className="size-4" aria-hidden /> Generate timetable
+          <Button className="rounded-full" onClick={goToReview}>
+            <Wand2 className="size-4" aria-hidden /> Review syllabus &amp; pick topics
           </Button>
         </div>
-      </div>
-
-      <div className="mt-6">
-        <PlanSelector />
       </div>
 
       <Tabs defaultValue="syllabus" className="mt-6">
@@ -140,7 +120,7 @@ function SetupPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <SyllabusUpload />
+              <SyllabusUpload onApplied={() => navigate({ to: "/syllabus-review" })} />
             </CardContent>
           </Card>
           <UnitsCard />
