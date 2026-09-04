@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { uid, useStudyState } from "@/lib/study/storage";
-import { parseSyllabus } from "@/lib/study/parse";
+
 import { SyllabusUpload } from "@/components/study/syllabus-upload";
 import { UnitManager } from "@/components/study/unit-manager";
 import { PlanSelector } from "@/components/study/plan-selector";
