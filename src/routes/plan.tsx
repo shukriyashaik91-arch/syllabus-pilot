@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarRange, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/study/app-shell";
+import { StepNav } from "@/components/study/step-nav";
 import { TiltCard } from "@/components/study/tilt-card";
 import { Scene3D } from "@/components/three/scene-3d";
 import { SessionCard } from "@/components/study/session-card";
@@ -67,11 +68,15 @@ function PlanPage() {
 
   const regenerate = () => {
     const selection = state.planSelection;
+    if (state.topicSelection && state.topicSelection.length === 0) {
+      toast.error("Please select at least one topic to generate your timetable.");
+      return;
+    }
     if (selection && selection.length === 0) {
       toast.error("Please select at least one subject or unit to generate your timetable.");
       return;
     }
-    const { sessions, milestones } = generatePlan(state, { unitKeys: selection });
+    const { sessions, milestones } = generatePlan(state, { unitKeys: selection, topicIds: state.topicSelection });
     if (sessions.length === 0) {
       toast.error("Please select at least one subject or unit to generate your timetable.");
       return;
@@ -95,7 +100,8 @@ function PlanPage() {
 
   return (
     <AppShell>
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6">
+      <StepNav current={4} />
+      <div className="relative mt-4 overflow-hidden rounded-3xl border border-border bg-card p-6">
         <Scene3D
           variant="orb"
           className="absolute -right-6 top-1/2 hidden h-48 w-64 -translate-y-1/2 opacity-70 md:block"
