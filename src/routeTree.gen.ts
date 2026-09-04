@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PlanRouteImport } from './routes/plan'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as SyllabusReviewRouteImport } from './routes/syllabus-review'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const SetupRoute = SetupRouteImport.update({
   path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SyllabusReviewRoute = SyllabusReviewRouteImport.update({
+  id: '/syllabus-review',
+  path: '/syllabus-review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/plan': typeof PlanRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
+  '/syllabus-review': typeof SyllabusReviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/plan': typeof PlanRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
+  '/syllabus-review': typeof SyllabusReviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,14 +79,36 @@ export interface FileRoutesById {
   '/plan': typeof PlanRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
+  '/syllabus-review': typeof SyllabusReviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analytics' | '/auth' | '/plan' | '/settings' | '/setup'
+  fullPaths:
+    | '/'
+    | '/analytics'
+    | '/auth'
+    | '/plan'
+    | '/settings'
+    | '/setup'
+    | '/syllabus-review'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analytics' | '/auth' | '/plan' | '/settings' | '/setup'
+  to:
+    | '/'
+    | '/analytics'
+    | '/auth'
+    | '/plan'
+    | '/settings'
+    | '/setup'
+    | '/syllabus-review'
   id:
-    '__root__' | '/' | '/analytics' | '/auth' | '/plan' | '/settings' | '/setup'
+    | '__root__'
+    | '/'
+    | '/analytics'
+    | '/auth'
+    | '/plan'
+    | '/settings'
+    | '/setup'
+    | '/syllabus-review'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -88,6 +118,7 @@ export interface RootRouteChildren {
   PlanRoute: typeof PlanRoute
   SettingsRoute: typeof SettingsRoute
   SetupRoute: typeof SetupRoute
+  SyllabusReviewRoute: typeof SyllabusReviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -134,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/syllabus-review': {
+      id: '/syllabus-review'
+      path: '/syllabus-review'
+      fullPath: '/syllabus-review'
+      preLoaderRoute: typeof SyllabusReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -144,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlanRoute: PlanRoute,
   SettingsRoute: SettingsRoute,
   SetupRoute: SetupRoute,
+  SyllabusReviewRoute: SyllabusReviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
