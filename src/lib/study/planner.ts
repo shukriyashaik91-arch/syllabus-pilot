@@ -262,11 +262,13 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
     });
   }
 
+  if (queues.length === 0) return { sessions: [], milestones: [] };
 
   const sessionCap = Math.min(
     4,
     Math.max(0.5, Math.round(((availability.sessionMinutes ?? 60) / 60) * 2) / 2),
   );
+
 
   const sessions: PlanSession[] = [];
   const examLockedDays = new Map<string, Exam>();
