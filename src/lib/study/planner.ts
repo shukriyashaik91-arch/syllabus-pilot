@@ -145,13 +145,18 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
 
   const selection = options.unitKeys ? new Set(options.unitKeys) : null;
   const picked = options.topicIds ? new Set(options.topicIds) : null;
-  const pending = topics.filter(
-    (t) =>
-      t.status !== "done" &&
-      (!selection || selection.has(unitKeyOf(t))) &&
-      (!picked || picked.has(t.id)),
+  const selected = topics.filter(
+    (t) => (!selection || selection.has(unitKeyOf(t))) && (!picked || picked.has(t.id)),
   );
-  if (pending.length === 0 || subjects.length === 0) return { sessions: [], milestones: [] };
+  if (selected.length === 0 || subjects.length === 0) return { sessions: [], milestones: [] };
+
+  // Hours already spent learning each topic in the current plan — a regenerated
+  // timetable must never re-teach work the student has already ticked off.
+  const learnedHours = new Map<string, number>();
+  for (const s of state.plan) {
+    if (!s.topicId || s.kind !== "study" || !s.done) continue;
+    learnedHours.set(s.topicId, (learnedHours.get(s.topicId) ?? 0) + s.hours);
+  }
 
   const examBySubject = new Map<string, Exam>();
   for (const exam of [...exams].sort((a, b) => a.date.localeCompare(b.date))) {
@@ -170,42 +175,80 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
   // Unit-ordered work queues, one per subject.
   const queues: SubjectQueue[] = [];
   for (const subject of subjects) {
-    const subjectTopics = pending.filter((t) => t.subjectId === subject.id);
+    const subjectTopics = selected.filter((t) => t.subjectId === subject.id);
     if (subjectTopics.length === 0) continue;
 
     const items: WorkItem[] = [];
     for (const unit of groupUnits(subjectTopics, subject.id)) {
+      const learnItems: WorkItem[] = [];
+      const reviewItems: WorkItem[] = [];
+
       for (const topic of unit.topics) {
-        items.push({
-          kind: "study",
+        const spent = learnedHours.get(topic.id) ?? 0;
+        const left = Math.round((topic.estimatedHours - spent) * 10) / 10;
+        const finished = topic.status === "done";
+
+        if (!finished && left >= 0.5) {
+          // Never learned (or only partly learned) — schedule the remaining hours once.
+          learnItems.push({
+            kind: "study",
+            topic,
+            title: topic.name,
+            remaining: left,
+            unitKey: unit.key,
+            unitLabel: unit.label,
+            subjectId: subject.id,
+          });
+          continue;
+        }
+
+        // Already learned or completed: it comes back only as revision/practice.
+        reviewItems.push({
+          kind: "revision",
           topic,
-          title: topic.name,
-          remaining: topic.estimatedHours,
+          title: `Revision — ${topic.name}`,
+          remaining: Math.min(1, Math.max(0.5, Math.round(topic.estimatedHours * 0.3 * 2) / 2)),
+          unitKey: unit.key,
+          unitLabel: unit.label,
+          subjectId: subject.id,
+        });
+        reviewItems.push({
+          kind: "practice",
+          topic,
+          title: `Practice — ${topic.name}`,
+          remaining: 0.5,
           unitKey: unit.key,
           unitLabel: unit.label,
           subjectId: subject.id,
         });
       }
-      const unitHours = unit.topics.reduce((h, t) => h + t.estimatedHours, 0);
-      items.push({
-        kind: "revision",
-        topic: null,
-        title: `Revise ${unit.label}`,
-        remaining: Math.min(2, Math.max(0.5, Math.round(unitHours * 0.3 * 2) / 2)),
-        unitKey: unit.key,
-        unitLabel: unit.label,
-        subjectId: subject.id,
-      });
-      items.push({
-        kind: "practice",
-        topic: null,
-        title: `Practice questions — ${unit.label}`,
-        remaining: 1,
-        unitKey: unit.key,
-        unitLabel: unit.label,
-        subjectId: subject.id,
-      });
+
+      items.push(...learnItems, ...reviewItems);
+
+      if (learnItems.length > 0) {
+        const unitHours = unit.topics.reduce((h, t) => h + t.estimatedHours, 0);
+        items.push({
+          kind: "revision",
+          topic: null,
+          title: `Revise ${unit.label}`,
+          remaining: Math.min(2, Math.max(0.5, Math.round(unitHours * 0.3 * 2) / 2)),
+          unitKey: unit.key,
+          unitLabel: unit.label,
+          subjectId: subject.id,
+        });
+        items.push({
+          kind: "practice",
+          topic: null,
+          title: `Practice questions — ${unit.label}`,
+          remaining: 1,
+          unitKey: unit.key,
+          unitLabel: unit.label,
+          subjectId: subject.id,
+        });
+      }
     }
+
+    if (items.length === 0) continue;
 
     queues.push({
       subjectId: subject.id,
@@ -218,6 +261,7 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
       ),
     });
   }
+
 
   const sessionCap = Math.min(
     4,
