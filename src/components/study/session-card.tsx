@@ -6,11 +6,12 @@ import type { PlanSession, Subject } from "@/lib/study/types";
 import { subjectColor, subjectName } from "@/lib/study/planner";
 
 const KIND_LABEL: Record<PlanSession["kind"], string> = {
-  study: "Study",
+  study: "Learn",
   revision: "Revision",
   practice: "Practice",
   buffer: "Buffer",
 };
+
 
 interface SessionCardProps {
   session: PlanSession;
