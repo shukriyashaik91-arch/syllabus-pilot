@@ -340,8 +340,18 @@ export function generatePlan(state: StudyState, options: PlanOptions = {}): Plan
       });
       if (eligible.length === 0) break;
 
-      const queue = eligible.reduce((best, q) => (q.score > best.score ? q : best), eligible[0]!);
+      // Don't put the same topic in two back-to-back blocks when there is
+      // something else to work on.
+      const lastKey = dayBlocks.at(-1)?.topicId ?? dayBlocks.at(-1)?.title ?? null;
+      const varied = eligible.filter((q) => {
+        const next = q.items[q.cursor]!;
+        return (next.topic?.id ?? next.title) !== lastKey;
+      });
+      const pool = varied.length > 0 ? varied : eligible;
+
+      const queue = pool.reduce((best, q) => (q.score > best.score ? q : best), pool[0]!);
       const item = queue.items[queue.cursor]!;
+
 
       const chunk = Math.min(item.remaining, capacity, sessionCap);
       const block = session(iso, item.subjectId, item.topic?.id ?? null, item.title, chunk, item.kind);
