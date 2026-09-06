@@ -110,6 +110,48 @@ export interface AppSettings {
   notifications: NotificationPrefs;
 }
 
+/** A generated multiple-choice question tied to one studied topic. */
+export interface QuizQuestion {
+  id: string;
+  topicId: string | null;
+  topicName: string;
+  subjectId: string;
+  question: string;
+  options: string[];
+  /** Index into `options`. */
+  answerIndex: number;
+  explanation: string;
+  difficulty: Difficulty;
+}
+
+/** A written exam-style question kept in the question bank. */
+export interface ExamQuestion {
+  id: string;
+  subjectId: string;
+  topicName: string;
+  marks: 2 | 5 | 10;
+  question: string;
+  answer: string;
+  createdAt: string;
+}
+
+export interface QuizAttempt {
+  id: string;
+  /** Session the quiz followed, when it came from a completed block. */
+  sessionId: string | null;
+  createdAt: string;
+  subjectId: string;
+  topicNames: string[];
+  questions: QuizQuestion[];
+  /** Question id → chosen option index. */
+  answers: Record<string, number>;
+  score: number;
+  total: number;
+  /** Topic names answered wrong in this attempt. */
+  weakTopics: string[];
+  kind: "session" | "mock";
+}
+
 export interface StudyState {
   subjects: Subject[];
   topics: Topic[];
@@ -135,7 +177,12 @@ export interface StudyState {
    * `null` means "everything in the syllabus".
    */
   topicSelection: string[] | null;
+  /** Every quiz the student has taken, newest last. */
+  quizAttempts: QuizAttempt[];
+  /** Saved 2/5/10 mark written questions. */
+  questionBank: ExamQuestion[];
 }
+
 
 export const defaultAvailability: Availability = {
   hoursPerDay: 3,
