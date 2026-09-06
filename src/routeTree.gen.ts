@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PlanRouteImport } from './routes/plan'
+import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SetupRouteImport } from './routes/setup'
@@ -36,6 +37,11 @@ const AuthRoute = AuthRouteImport.update({
 const PlanRoute = PlanRouteImport.update({
   id: '/plan',
   path: '/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuizRoute = QuizRouteImport.update({
+  id: '/quiz',
+  path: '/quiz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ScheduleRoute = ScheduleRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/plan': typeof PlanRoute
+  '/quiz': typeof QuizRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/plan': typeof PlanRoute
+  '/quiz': typeof QuizRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/plan': typeof PlanRoute
+  '/quiz': typeof QuizRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/auth'
     | '/plan'
+    | '/quiz'
     | '/schedule'
     | '/settings'
     | '/setup'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/auth'
     | '/plan'
+    | '/quiz'
     | '/schedule'
     | '/settings'
     | '/setup'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/auth'
     | '/plan'
+    | '/quiz'
     | '/schedule'
     | '/settings'
     | '/setup'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
   PlanRoute: typeof PlanRoute
+  QuizRoute: typeof QuizRoute
   ScheduleRoute: typeof ScheduleRoute
   SettingsRoute: typeof SettingsRoute
   SetupRoute: typeof SetupRoute
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/plan'
       fullPath: '/plan'
       preLoaderRoute: typeof PlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quiz': {
+      id: '/quiz'
+      path: '/quiz'
+      fullPath: '/quiz'
+      preLoaderRoute: typeof QuizRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/schedule': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
   PlanRoute: PlanRoute,
+  QuizRoute: QuizRoute,
   ScheduleRoute: ScheduleRoute,
   SettingsRoute: SettingsRoute,
   SetupRoute: SetupRoute,
