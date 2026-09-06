@@ -220,6 +220,9 @@ export const emptyState: StudyState = {
   activeDays: [],
   planSelection: null,
   topicSelection: null,
+  quizAttempts: [],
+  questionBank: [],
+
 };
 
 export const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
