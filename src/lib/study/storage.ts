@@ -38,6 +38,9 @@ function normalize(parsed: Partial<StudyState>): StudyState {
     milestones: parsed.milestones ?? [],
     files: parsed.files ?? [],
     coachNotes: parsed.coachNotes ?? [],
+    quizAttempts: parsed.quizAttempts ?? [],
+    questionBank: parsed.questionBank ?? [],
+
   };
 }
 
