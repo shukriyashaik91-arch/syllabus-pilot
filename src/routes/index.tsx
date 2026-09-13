@@ -351,6 +351,71 @@ function Dashboard() {
         </Card>
 
       </div>
+
+      <TiltCard max={3} className="mt-4">
+        <Card className="depth-card hover:depth-card-hover rounded-3xl">
+          <CardHeader className="flex flex-row items-center justify-between gap-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BrainCircuit className="size-4 text-accent" aria-hidden /> Quiz &amp; practice
+            </CardTitle>
+            <Button asChild variant="outline" size="sm" className="press rounded-full">
+              <Link to="/quiz">Open quiz studio</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {state.quizAttempts.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Complete a study session and a quiz on exactly what you studied will
+                appear here — plus 2, 5 and 10 mark exam questions.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-3 text-sm">
+                  <span>
+                    Last score:{" "}
+                    <strong>
+                      {lastAttempt?.score}/{lastAttempt?.total}
+                    </strong>
+                  </span>
+                  <span aria-hidden>·</span>
+                  <span>{state.quizAttempts.length} quizzes taken</span>
+                  <span aria-hidden>·</span>
+                  <span>{state.questionBank.length} exam questions saved</span>
+                </div>
+                {weakTopics.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Needs work:</span>
+                    {weakTopics.slice(0, 5).map((m) => (
+                      <Badge key={m.topicName} variant="outline" className="rounded-full">
+                        {m.topicName} {Math.round(m.accuracy * 100)}%
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    No weak topics right now — keep it up.
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </TiltCard>
+
+      {quizSession ? (
+        <QuizRunner
+          open
+          onOpenChange={(open) => {
+            if (!open) setQuizSession(null);
+          }}
+          state={state}
+          subjectId={quizSession.subjectId}
+          topics={topicsForSession(state, quizSession)}
+          sessionId={quizSession.id}
+          kind="session"
+          onFinish={saveAttempt}
+        />
+      ) : null}
     </AppShell>
   );
 }
