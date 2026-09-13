@@ -64,6 +64,7 @@ export function QuizRunner({
     setAnswers({});
     setIndex(0);
     setAttempt(null);
+    setSecondsLeft(null);
   };
 
   const close = (next: boolean) => {
@@ -134,8 +135,37 @@ export function QuizRunner({
     onFinish(result);
   };
 
+  // Auto-build the quiz when opened straight from a completed session.
+  useEffect(() => {
+    if (open && autoStart && phase === "intro") void start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, autoStart]);
+
+  // Mock-test countdown: starts with the quiz, auto-submits at zero.
+  useEffect(() => {
+    if (phase === "quiz" && timeLimitMinutes && secondsLeft === null) {
+      setSecondsLeft(timeLimitMinutes * 60);
+    }
+  }, [phase, timeLimitMinutes, secondsLeft]);
+
+  useEffect(() => {
+    if (phase !== "quiz" || secondsLeft === null) return;
+    if (secondsLeft <= 0) {
+      toast.info("Time's up — submitting your test.");
+      submit();
+      return;
+    }
+    const timer = setTimeout(() => setSecondsLeft((s) => (s === null ? s : s - 1)), 1000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, secondsLeft]);
+
   const current = questions[index];
   const answeredCount = Object.keys(answers).length;
+  const clock =
+    secondsLeft === null
+      ? null
+      : `${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, "0")}`;
 
   return (
     <Dialog open={open} onOpenChange={close}>
