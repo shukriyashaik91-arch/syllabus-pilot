@@ -198,6 +198,21 @@ function PlanPage() {
         </div>
 
       )}
+
+      {quizSession ? (
+        <QuizRunner
+          open
+          onOpenChange={(open) => {
+            if (!open) setQuizSession(null);
+          }}
+          state={state}
+          subjectId={quizSession.subjectId}
+          topics={topicsForSession(state, quizSession)}
+          sessionId={quizSession.id}
+          kind="session"
+          onFinish={saveAttempt}
+        />
+      ) : null}
     </AppShell>
   );
 }
