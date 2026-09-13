@@ -117,6 +117,12 @@ function Dashboard() {
 
       return { ...prev, plan, topics, activeDays };
     });
+
+    // Completing a study block offers a quiz on exactly what was studied.
+    const session = state.plan.find((s) => s.id === id);
+    if (session && !session.done && session.kind === "study") {
+      setQuizSession({ ...session, done: true });
+    }
   };
 
   if (!hydrated) {
