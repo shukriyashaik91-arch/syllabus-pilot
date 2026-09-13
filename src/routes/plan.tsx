@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarRange, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -6,11 +7,14 @@ import { StepNav } from "@/components/study/step-nav";
 import { TiltCard } from "@/components/study/tilt-card";
 import { Scene3D } from "@/components/three/scene-3d";
 import { SessionCard } from "@/components/study/session-card";
+import { QuizRunner } from "@/components/study/quiz-runner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStudyState } from "@/lib/study/storage";
 import { generatePlan, parseISODate, todayISO } from "@/lib/study/planner";
+import { scheduleWeakTopicRevision, topicsForSession } from "@/lib/study/quiz";
+import type { PlanSession, QuizAttempt } from "@/lib/study/types";
 
 export const Route = createFileRoute("/plan")({
   head: () => ({
@@ -35,6 +39,17 @@ export const Route = createFileRoute("/plan")({
 function PlanPage() {
   const { state, update, hydrated } = useStudyState();
   const today = todayISO();
+  const [quizSession, setQuizSession] = useState<PlanSession | null>(null);
+
+  const saveAttempt = (attempt: QuizAttempt) => {
+    update((prev) =>
+      scheduleWeakTopicRevision(
+        { ...prev, quizAttempts: [...prev.quizAttempts, attempt] },
+        attempt,
+      ),
+    );
+    toast.success("Quiz saved — extra revision added where needed.");
+  };
 
   const upcoming = state.plan
     .filter((s) => s.date >= today)
