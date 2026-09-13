@@ -113,6 +113,85 @@ export function scheduleWeakTopicRevision(state: StudyState, attempt: QuizAttemp
   return { ...state, plan: [...state.plan, ...extra] };
 }
 
+/**
+ * Builds a pre-exam revision plan for each upcoming exam: weak and shaky topics
+ * (from quiz scores) get alternating revision and practice blocks in the days
+ * leading up to the exam, finishing with a mock test the day before.
+ */
+export function buildPreExamPlan(state: StudyState): { state: StudyState; added: number } {
+  const today = todayISO();
+  const mastery = masteryByTopic(state.quizAttempts).filter((m) => m.status !== "strong");
+  const extra: PlanSession[] = [];
+
+  const upcoming = state.exams
+    .filter((e) => e.date > today)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  for (const exam of upcoming) {
+    const daysLeft = Math.round(
+      (parseISODate(exam.date).getTime() - parseISODate(today).getTime()) / DAY_MS,
+    );
+    if (daysLeft < 1) continue;
+
+    // Weak topics for this subject first, shaky ones after; cap the workload.
+    const targets = mastery
+      .filter((m) => m.subjectId === exam.subjectId)
+      .slice(0, Math.max(2, daysLeft * 2));
+
+    // Mock test the day before the exam.
+    const mockDate = nextFreeDate(
+      state,
+      toISODate(new Date(parseISODate(exam.date).getTime() - DAY_MS)),
+    );
+    const mockTitle = `Mock test — ${exam.name}`;
+    if (!state.plan.some((s) => s.date === mockDate && s.title === mockTitle)) {
+      extra.push({
+        id: uid("ses"),
+        date: mockDate,
+        subjectId: exam.subjectId,
+        topicId: null,
+        title: mockTitle,
+        hours: 1,
+        kind: "practice",
+        done: false,
+        unitLabel: "Pre-exam revision",
+      });
+    }
+
+    targets.forEach((m, i) => {
+      const offset = 1 + Math.floor(i / 2);
+      if (offset >= daysLeft) return;
+      const date = nextFreeDate(
+        state,
+        toISODate(new Date(parseISODate(today).getTime() + offset * DAY_MS)),
+      );
+      const kind = i % 2 === 0 ? "revision" : "practice";
+      const title = `${kind === "revision" ? "Revision" : "Practice"} — ${m.topicName} (pre-exam)`;
+      const dup =
+        state.plan.some((s) => s.date === date && s.title === title) ||
+        extra.some((s) => s.date === date && s.title === title);
+      if (dup) return;
+      const topic = state.topics.find(
+        (t) => t.subjectId === m.subjectId && t.name.toLowerCase() === m.topicName.toLowerCase(),
+      );
+      extra.push({
+        id: uid("ses"),
+        date,
+        subjectId: m.subjectId,
+        topicId: topic?.id ?? null,
+        title,
+        hours: 0.5,
+        kind,
+        done: false,
+        unitLabel: topic ? `${topic.unitNumber ?? "Unit"}: ${topic.unit}` : "Pre-exam revision",
+      });
+    });
+  }
+
+  if (extra.length === 0) return { state, added: 0 };
+  return { state: { ...state, plan: [...state.plan, ...extra] }, added: extra.length };
+}
+
 export function scoreLabel(score: number, total: number): string {
   const pct = total ? Math.round((score / total) * 100) : 0;
   if (pct >= 85) return "Excellent — this topic is solid.";
