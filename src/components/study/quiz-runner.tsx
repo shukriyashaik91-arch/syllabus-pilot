@@ -44,6 +44,8 @@ export function QuizRunner({
   topics,
   sessionId,
   kind,
+  autoStart = false,
+  timeLimitMinutes,
   onFinish,
 }: QuizRunnerProps) {
   const [phase, setPhase] = useState<Phase>("intro");
@@ -51,6 +53,7 @@ export function QuizRunner({
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [index, setIndex] = useState(0);
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
   const topicNames = topics.map((t) => t.name);
   const subjectName = state.subjects.find((s) => s.id === subjectId)?.name ?? "This subject";
