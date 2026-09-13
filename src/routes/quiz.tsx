@@ -143,7 +143,8 @@ function QuizPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  A 10-question mixed test across everything you've studied in a subject.
+                  A timed 10-question mixed test across everything you've studied in a subject —
+                  10 minutes on the clock.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {state.subjects.map((subject) => (
@@ -297,6 +298,7 @@ function QuizPage() {
             .slice(0, 12)}
           sessionId={null}
           kind="mock"
+          timeLimitMinutes={10}
           onFinish={saveAttempt}
         />
       ) : null}
