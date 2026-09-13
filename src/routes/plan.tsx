@@ -210,6 +210,7 @@ function PlanPage() {
           topics={topicsForSession(state, quizSession)}
           sessionId={quizSession.id}
           kind="session"
+          autoStart
           onFinish={saveAttempt}
         />
       ) : null}
