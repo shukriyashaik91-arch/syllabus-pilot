@@ -60,7 +60,7 @@ function PlanPage() {
     byDate.set(session.date, [...(byDate.get(session.date) ?? []), session]);
   }
 
-  const toggleSession = (id: string) =>
+  const toggleSession = (id: string) => {
     update((prev) => {
       const session = prev.plan.find((s) => s.id === id);
       if (!session) return prev;
