@@ -216,8 +216,15 @@ export function QuizRunner({
         {phase === "quiz" && current ? (
           <>
             <DialogHeader>
-              <DialogTitle className="text-lg">
-                Question {index + 1} of {questions.length}
+              <DialogTitle className="flex items-center justify-between gap-3 text-lg">
+                <span>
+                  Question {index + 1} of {questions.length}
+                </span>
+                {clock ? (
+                  <Badge variant={secondsLeft! < 60 ? "destructive" : "secondary"} className="rounded-full">
+                    {clock} left
+                  </Badge>
+                ) : null}
               </DialogTitle>
               <DialogDescription>{current.topicName}</DialogDescription>
             </DialogHeader>
