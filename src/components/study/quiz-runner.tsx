@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Loader2, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,10 @@ interface QuizRunnerProps {
   topics: Topic[];
   sessionId: string | null;
   kind: "session" | "mock";
+  /** Skip the intro screen and build the quiz as soon as it opens. */
+  autoStart?: boolean;
+  /** Mock-test countdown in minutes; the quiz auto-submits when it hits zero. */
+  timeLimitMinutes?: number;
   /** Called once the student finishes and the attempt is ready to store. */
   onFinish: (attempt: QuizAttempt) => void;
 }
