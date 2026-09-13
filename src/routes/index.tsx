@@ -56,6 +56,21 @@ const QUOTES = [
 function Dashboard() {
   const { state, update, hydrated } = useStudyState();
   const today = todayISO();
+  const [quizSession, setQuizSession] = useState<PlanSession | null>(null);
+
+  const mastery = masteryByTopic(state.quizAttempts);
+  const weakTopics = mastery.filter((m) => m.status === "weak");
+  const lastAttempt = state.quizAttempts[state.quizAttempts.length - 1] ?? null;
+
+  const saveAttempt = (attempt: QuizAttempt) => {
+    update((prev) =>
+      scheduleWeakTopicRevision(
+        { ...prev, quizAttempts: [...prev.quizAttempts, attempt] },
+        attempt,
+      ),
+    );
+    toast.success("Quiz saved — your plan has been adjusted.");
+  };
 
   const todaySessions = state.plan.filter((s) => s.date === today);
   const doneTopics = state.topics.filter((t) => t.status === "done").length;
