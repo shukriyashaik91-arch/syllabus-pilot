@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Loader2, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,10 @@ interface QuizRunnerProps {
   topics: Topic[];
   sessionId: string | null;
   kind: "session" | "mock";
+  /** Skip the intro screen and build the quiz as soon as it opens. */
+  autoStart?: boolean;
+  /** Mock-test countdown in minutes; the quiz auto-submits when it hits zero. */
+  timeLimitMinutes?: number;
   /** Called once the student finishes and the attempt is ready to store. */
   onFinish: (attempt: QuizAttempt) => void;
 }
@@ -40,6 +44,8 @@ export function QuizRunner({
   topics,
   sessionId,
   kind,
+  autoStart = false,
+  timeLimitMinutes,
   onFinish,
 }: QuizRunnerProps) {
   const [phase, setPhase] = useState<Phase>("intro");
@@ -47,6 +53,7 @@ export function QuizRunner({
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [index, setIndex] = useState(0);
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
   const topicNames = topics.map((t) => t.name);
   const subjectName = state.subjects.find((s) => s.id === subjectId)?.name ?? "This subject";
@@ -57,6 +64,7 @@ export function QuizRunner({
     setAnswers({});
     setIndex(0);
     setAttempt(null);
+    setSecondsLeft(null);
   };
 
   const close = (next: boolean) => {
@@ -127,8 +135,37 @@ export function QuizRunner({
     onFinish(result);
   };
 
+  // Auto-build the quiz when opened straight from a completed session.
+  useEffect(() => {
+    if (open && autoStart && phase === "intro") void start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, autoStart]);
+
+  // Mock-test countdown: starts with the quiz, auto-submits at zero.
+  useEffect(() => {
+    if (phase === "quiz" && timeLimitMinutes && secondsLeft === null) {
+      setSecondsLeft(timeLimitMinutes * 60);
+    }
+  }, [phase, timeLimitMinutes, secondsLeft]);
+
+  useEffect(() => {
+    if (phase !== "quiz" || secondsLeft === null) return;
+    if (secondsLeft <= 0) {
+      toast.info("Time's up — submitting your test.");
+      submit();
+      return;
+    }
+    const timer = setTimeout(() => setSecondsLeft((s) => (s === null ? s : s - 1)), 1000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, secondsLeft]);
+
   const current = questions[index];
   const answeredCount = Object.keys(answers).length;
+  const clock =
+    secondsLeft === null
+      ? null
+      : `${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, "0")}`;
 
   return (
     <Dialog open={open} onOpenChange={close}>
@@ -179,8 +216,15 @@ export function QuizRunner({
         {phase === "quiz" && current ? (
           <>
             <DialogHeader>
-              <DialogTitle className="text-lg">
-                Question {index + 1} of {questions.length}
+              <DialogTitle className="flex items-center justify-between gap-3 text-lg">
+                <span>
+                  Question {index + 1} of {questions.length}
+                </span>
+                {clock ? (
+                  <Badge variant={secondsLeft! < 60 ? "destructive" : "secondary"} className="rounded-full">
+                    {clock} left
+                  </Badge>
+                ) : null}
               </DialogTitle>
               <DialogDescription>{current.topicName}</DialogDescription>
             </DialogHeader>
