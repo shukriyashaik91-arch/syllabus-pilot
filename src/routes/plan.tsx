@@ -81,6 +81,13 @@ function PlanPage() {
       return { ...prev, plan, topics, activeDays };
     });
 
+    // Completing a study block offers a quiz on exactly what was studied.
+    const session = state.plan.find((s) => s.id === id);
+    if (session && !session.done && session.kind === "study") {
+      setQuizSession({ ...session, done: true });
+    }
+  };
+
   const regenerate = () => {
     const selection = state.planSelection;
     if (state.topicSelection && state.topicSelection.length === 0) {
